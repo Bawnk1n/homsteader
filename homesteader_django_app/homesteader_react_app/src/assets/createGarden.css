@@ -1,0 +1,92 @@
+#createGardenPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#createGardenForm {
+  margin: 4rem;
+  background-color: beige;
+  padding: 4rem;
+}
+
+select {
+  min-height: 3rem;
+  text-align: center;
+  letter-spacing: 2px;
+  border-radius: 4px;
+  font-weight: bold;
+  max-width: 7rem;
+  border: 1px solid #d75358;
+  background-color: beige;
+  min-width: 10rem;
+  padding: 1rem;
+  margin: 1rem;
+}
+
+option {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+input[type="number"] {
+  min-height: 3rem;
+  text-align: center;
+  letter-spacing: 2px;
+  border-radius: 4px;
+  font-weight: bold;
+  max-width: 7rem;
+  border: 1px solid #d75358;
+  background-color: beige;
+  min-width: 10rem;
+  padding: 1rem;
+  margin: 1rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.checkboxLabel > input {
+  width: auto;
+  margin: 1rem;
+}
+
+.checkboxLabel > label {
+  margin-right: 50rem;
+}
+
+.checkboxDiv {
+  border-bottom: 1px solid lightblue;
+}
+
+.labelHeader {
+  margin: 2rem;
+  display: flex;
+  justify-content: space-around;
+}
+
+#plantList {
+  transition: max-height 0.9s ease-in-out;
+  max-height: 50rem;
+  overflow: hidden;
+}
+
+.labelAndBtn {
+  transition: border-bottom-color 0.9s ease-out;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid darkgrey;
+}
+
+.labelAndBtn.fade-out {
+  border-bottom-color: transparent;
+}
+
+.marginTwo {
+  margin: 2rem;
+}
