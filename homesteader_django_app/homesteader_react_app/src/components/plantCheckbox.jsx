@@ -8,7 +8,9 @@ export function PlantCheckbox(props) {
 
   function toggleShowDescription(e) {
     e.preventDefault();
-    showDescription ? setShowDescription(false) : setShowDescription(true);
+    showDescription
+      ? (setShowDescription(false), props.makeShorter())
+      : (setShowDescription(true), props.makeTaller());
   }
   return (
     <div key={props.plant.name} className="checkboxDiv">
@@ -24,7 +26,18 @@ export function PlantCheckbox(props) {
           {props.plant.name}
         </div>
 
-        <input type="checkbox" name="vegetables" value={props.plant.name} />
+        <input
+          type="checkbox"
+          name="plants"
+          value={props.plant.name}
+          onChange={(e) => {
+            if (e.target.checked) {
+              props.updateForm(e.target.name, e.target.value, true, false);
+            } else {
+              props.updateForm(e.target.name, e.target.value, true, true);
+            }
+          }}
+        />
       </label>
 
       <div

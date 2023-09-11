@@ -2,12 +2,19 @@ import { PlantCheckbox } from "./plantCheckbox";
 import { gardenPlants } from "../assets/presetPlants";
 import CaretDownFill from "../assets/caret-down-fill.svg";
 import CaretUpFill from "../assets/caret-up-fill.svg";
+import { useState } from "react";
 
 export function PlantList(props) {
-  //props i need:
-  //category: vegetables (htmlfor, label html)
-  //showCategory, setShowCategory
-  //maxHeight
+  const [maxHeight, setMaxHeight] = useState(props.maxHeight);
+
+  function makeTaller() {
+    setMaxHeight((old) => old + 10);
+  }
+
+  function makeShorter() {
+    setMaxHeight((old) => old - 10);
+  }
+
   return (
     <div className="formElement">
       <div
@@ -39,14 +46,22 @@ export function PlantList(props) {
       </div>
       <div
         id="plantList"
-        style={{ maxHeight: props.showCategory ? props.maxHeight : "0" }}
+        style={{ maxHeight: props.showCategory ? `${maxHeight}rem` : "0" }}
       >
         {gardenPlants.map((plant) => {
           if (
             plant.category ===
             props.category.charAt(0).toUpperCase() + props.category.slice(1)
           ) {
-            return <PlantCheckbox plant={plant} key={plant.name} />;
+            return (
+              <PlantCheckbox
+                updateForm={props.updateForm}
+                plant={plant}
+                key={plant.name}
+                makeTaller={makeTaller}
+                makeShorter={makeShorter}
+              />
+            );
           }
         })}
       </div>

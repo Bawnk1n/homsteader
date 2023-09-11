@@ -7,8 +7,10 @@
 
 #createGardenForm {
   margin: 4rem;
+  margin-top: 10rem;
   background-color: beige;
   padding: 4rem;
+  font-size: 21px;
 }
 
 select {
@@ -89,4 +91,96 @@ input[type="number"] {
 
 .marginTwo {
   margin: 2rem;
+}
+
+#plan {
+  background-color: white;
+  padding: 5rem;
+}
+
+.disabled {
+  opacity: 0.5;
+  background-color: lightgrey;
+}
+#gardenCreatorDiv {
+  margin-top: 10rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: beige;
+  padding: 1rem;
+  border-radius: 15px;
+}
+
+#gardenSizeFormDiv {
+  margin: 2rem;
+}
+
+#gardenSizeForm {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 21px;
+}
+
+#gardenGrid {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 65.1rem;
+  margin-top: 1rem;
+  background-color: black;
+  justify-content: center;
+  align-items: center;
+  border: 4px solid black;
+}
+.square {
+  min-width: 50px;
+  min-height: 50px;
+  background-color: beige;
+  border: 1px solid black;
+  text-align: center;
+  border-radius: 3px;
+}
+
+.square:hover {
+  box-shadow: 0 0 10px 0 black;
+  /* background-color: lightgreen; */
+}
+
+.selected {
+  background-color: #f19541;
+}
+
+.structurePoint {
+  opacity: 0.4;
+}
+
+.hovered {
+  box-shadow: 0 0 5px 0 black;
+  border: 1px solid blue;
+  background-color: lightblue;
+  opacity: 0.7;
+}
+
+.overlapped {
+  box-shadow: 0 0 5px 0 black;
+  background-color: lightgrey;
+  border: 1px solid grey;
+  opacity: 0.7;
+}
+
+#structureBtns {
+  text-align: center;
+}
+
+#planBitch {
+  background-color: beige;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 3rem;
+  padding: 1rem;
 }

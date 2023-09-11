@@ -1,0 +1,22 @@
+.content {
+  margin: 10rem;
+  margin-top: 10rem;
+  background-color: beige;
+  padding: 4rem;
+}
+
+.plantDiv {
+  background-color: #f19541;
+  padding: 1rem;
+  margin: 1rem;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: left;
+  flex-direction: column;
+}
+
+.disabled {
+  opacity: 0.5;
+  background-color: lightgrey;
+}

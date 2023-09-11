@@ -54,6 +54,8 @@
   left: 0;
   right: 0;
   background-color: beige;
+  border-bottom: 1px solid black;
+  z-index: 2;
 }
 
 .side-by-side {

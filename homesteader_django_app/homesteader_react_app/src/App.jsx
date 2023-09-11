@@ -7,6 +7,7 @@ import { getCookie } from "./assets/getCookie";
 import { NavBar } from "./components/navbar";
 import { LoginButtons } from "./components/loginButtons";
 import { CreateGarden } from "./components/createGarden";
+import { GardenPlan } from "./components/gardenPlan";
 
 //took csrfToken out of functions, might work might not
 
@@ -15,6 +16,8 @@ function App() {
     const storedValue = localStorage.getItem("isAuthenticated");
     return storedValue ? JSON.parse(storedValue) : false;
   });
+
+  const [plan, setPlan] = useState({});
 
   useEffect(() => {
     localStorage.setItem("isAuthenticated", JSON.stringify(isAuthenticated));
@@ -65,6 +68,10 @@ function App() {
       setIsAuthenticated(true);
     }
   }
+
+  function updatePlan(generatedPlan) {
+    setPlan(generatedPlan);
+  }
   return (
     <BrowserRouter>
       <Routes>
@@ -75,7 +82,7 @@ function App() {
               {!isAuthenticated && <LoginButtons />}
               {isAuthenticated && (
                 <div>
-                  <NavBar logout={logout} />
+                  <NavBar logout={logout} isAuthenticated={isAuthenticated} />
                   <div id="content">
                     <Link to="/create" className="mybtn">
                       Create a Garden
@@ -94,7 +101,26 @@ function App() {
           path="register"
           element={<RegisterPage toggleAuthenticated={toggleAuthenticated} />}
         />
-        <Route path="create" element={<CreateGarden />} />
+        <Route
+          path="create"
+          element={
+            <CreateGarden
+              logout={logout}
+              isAuthenticated={isAuthenticated}
+              updatePlan={updatePlan}
+            />
+          }
+        />
+        <Route
+          path="plan"
+          element={
+            <GardenPlan
+              revisions={plan.revisions}
+              garden={plan.garden}
+              finalAdvice={plan.finalAdvice}
+            />
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
