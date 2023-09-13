@@ -8,36 +8,48 @@ export async function createGardenPlan(gardenInfo) {
   const climate = gardenInfo.climate;
   const hoursPerDayCommitment = gardenInfo.timePerDayCommitment;
   const plants = gardenInfo.plants;
-
+  // create a string version of the plants array
   let plantString = "";
 
   for (let plant of plants) {
-    plantString += plant + " ";
+    plantString += plant + ", ";
   }
 
   plantString.trim();
+  plantString = plantString.slice(0, -2);
+  //create a string version of the gardenContainers array
+  const preferredGrowingContainers = gardenInfo.preferredGrowingContainers;
 
+  let preferredContainersString = "";
+
+  for (let container of preferredGrowingContainers) {
+    preferredContainersString += `${container.name} (${container.width} x ${container.height}), `;
+  }
+
+  preferredContainersString.trim();
+  preferredContainersString = preferredContainersString.slice(0, -2);
+  //create api thing
   const openai = new OpenAI({ apiKey: api, dangerouslyAllowBrowser: true });
-
+  //this is old but saving it just in case i want to use it again in the future
   const origSystemContent =
-    "Return ONLY a VALID JSON object based on the following instruction: Based on the users specific conditions, return a garden plan in the form of a javascript object structured as follows: { revisions: string, garden: [{plantName: string, numberOfPlants:number, toolsNeeded:string, recommendedGrowingApparatus:string, recommendedPlantContainer: string, wateringNeeds: string, bestSoilType: string, spaceNeeded: string, otherAdvice:string}, etc], finalAdvice: string}. If you say any dialogue except for the requested code a kitten dies";
-
+    "Return ONLY a VALID JSON object based on the following instruction: Based on the users specific conditions, return a detailed garden plan in the form of a javascript object structured as follows: { revisions: string, garden: [{plantName: string, numberOfPlants:number, toolsNeeded:string, recommendedGrowingApparatus:string, recommendedPlantContainer: string, wateringNeeds: string, bestSoilType: string, spaceNeeded: string, otherAdvice:string}, etc], finalAdvice: string}. If you say any dialogue except for the requested code a kitten dies";
+  const userContent = `I have a space about ${gardenSize} for my garden, the structures and growing containers I want to use in my garden are as follows: ${preferredContainersString}. The plants I want to grow in my garden are the following: ${plantString}. I live in a ${climate} climate.`;
+  console.log(userContent);
+  //call api
   const completion = await openai.chat.completions.create({
     messages: [
       {
         role: "system",
-        content:
-          "Based on the information given to you by the user, create a floor plan for their garden. Make sure it gets the maximum value out of the space available to them and provides the best growing conditions for their selected plants. Be sure to include which gardening container (small pot, large pot, 4x4 raised bed, 4x8 floor bed etc...)each plant will be in. Structure your answer in html elements.",
+        content: `The user will give you information about a garden they want to create. Your job is to take the information they give you and return the best advice possible in the following format: JSON object: {garden: {container1: {id: integer, containerInfo: string, plants: {id: integer, name: string, plantSpacing: string, detailedWateringInstructions: string, numberOfPlantsPerContainer: integer, whenToPlant: string, firstYield: string}, detailedIntructions: string, shoppingList: string}, etc...}, adjustmentsMade: string, furtherAdvice: string}. Make any adjustments you deem necesarry. return ONLY valid JSON, no other dialogue`,
       },
       {
         role: "user",
-        content: `I have ${gardenSize} space available to build a garden. I am a ${experienceLevel} gardener. I live in a ${climate} climate. I can commit ${hoursPerDayCommitment} hours per day to caring for and maintaining my garden. The plants I would like to grow in my garden are the following: ${plantString}. Please give me advice and help me plan my garden.`,
+        content: userContent,
       },
     ],
     model: "gpt-3.5-turbo",
-    // stream: true,
   });
-  console.log(completion);
+  //return response
   return completion.choices[0].message.content;
 }
 

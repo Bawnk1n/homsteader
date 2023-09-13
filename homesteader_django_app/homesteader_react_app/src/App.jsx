@@ -115,9 +115,9 @@ function App() {
           path="plan"
           element={
             <GardenPlan
-              revisions={plan.revisions}
+              adjustmentsMade={plan.adjustmentsMade}
               garden={plan.garden}
-              finalAdvice={plan.finalAdvice}
+              furtherAdvice={plan.furtherAdvice}
             />
           }
         />

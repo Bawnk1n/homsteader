@@ -5,7 +5,7 @@
   padding: 4rem;
 }
 
-.plantDiv {
+.containerDiv {
   background-color: #f19541;
   padding: 1rem;
   margin: 1rem;
@@ -14,6 +14,18 @@
   justify-content: center;
   align-items: left;
   flex-direction: column;
+  text-align: center;
+}
+
+.plantInfo {
+  background-color: #f19541;
+  box-shadow: 0 0 8px 0 black;
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 9px;
+  font-weight: bold;
+  border: 1px solid white;
+  text-align: left;
 }
 
 .disabled {

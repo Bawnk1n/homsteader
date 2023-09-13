@@ -11,6 +11,7 @@ import { Square } from "./square";
 export function CreateGarden(props) {
   const [gardenWidth, setGardenWidth] = useState(10);
   const [gardenHeight, setGardenHeight] = useState(5);
+  const [myStructures, setMyStructures] = useState([]);
   const [form, setForm] = useState({
     spaceAvailable: `${gardenWidth} x ${gardenHeight}ft`,
     preferredGrowingContainers: [],
@@ -30,10 +31,16 @@ export function CreateGarden(props) {
       "Kale",
       "Cherry Tomatoes",
     ],
-    timePerDayCommitment: 1,
-    isForFoodProduction: true,
-    isForAesthetics: false,
   });
+
+  // useEffect(() => {
+  //   setForm((old) => {
+  //     return {
+  //       ...old,
+  //       preferredGrowingContainers: myStructures,
+  //     };
+  //   });
+  // }, [myStructures]);
 
   const [plan, setPlan] = useState("");
 
@@ -41,9 +48,9 @@ export function CreateGarden(props) {
 
   const navigate = useNavigate();
 
-  function updateForm(key, value, updatePlantArray, removePlant) {
+  function updateForm(key, value, updateArray, removeElement) {
     //add plant to plant array
-    if (updatePlantArray && !removePlant) {
+    if (updateArray && !removeElement) {
       setForm((old) => {
         return {
           ...old,
@@ -51,7 +58,7 @@ export function CreateGarden(props) {
         };
       });
       //remove plant from plant array
-    } else if (updatePlantArray && removePlant) {
+    } else if (updateArray && removeElement) {
       setForm((old) => {
         return {
           ...old,
@@ -78,19 +85,6 @@ export function CreateGarden(props) {
   function renderPlan() {
     try {
       console.log(plan);
-      plan.garden.map((plant) => {
-        return (
-          <div key={plant.plantName}>
-            <h4>Plant: {plant.plantName}</h4>
-            <p>Number: {plant.numberOfPlants}</p>
-            <p>Tools needed: {plant.toolsNeeded}</p>
-            <p>
-              Recommended growing apparatus: {plant.recommendedGrowingApparatus}
-            </p>
-            <p>Other Advice: {plant.otherAdvice}</p>
-          </div>
-        );
-      });
       props.updatePlan(plan);
       navigate("/plan");
     } catch (TypeError) {
@@ -114,7 +108,6 @@ export function CreateGarden(props) {
   ]); //for storing a single point on a structure that also holds the structure size info to facilitate removing it properly
   const [hoverArray, setHoverArray] = useState([]); //for proper hover effects of structure, and also enforcing non-overlap rules on the onClick
   const [overlapped, setOverlapped] = useState(false);
-  const [myStructures, setMyStructures] = useState([]);
 
   function updateSelectedArray(squareId, remove) {
     if (remove) {
@@ -213,6 +206,8 @@ export function CreateGarden(props) {
                 gardenHeight={gardenHeight}
                 setMyStructures={setMyStructures}
                 myStructures={myStructures}
+                updateForm={updateForm}
+                setForm={setForm}
               />
             )
           )}
@@ -286,41 +281,6 @@ export function CreateGarden(props) {
         </div>
       </div>
       <form id="createGardenForm">
-        {/* Available space for a garden */}
-        {/* <div className="labelAndBtn ">
-          <label htmlFor="spaceAvailable" className="marginTwo">
-            How much space do you have available for a garden? (sq ft)
-          </label>
-          <input
-            type="number"
-            name="spaceAvailable"
-            step={1}
-            min={0}
-            onChange={(e) =>
-              updateForm(e.target.name, `${e.target.value} sq ft`)
-            }
-            value={form.spaceAvailable.replace(" sq ft", "")}
-          ></input>
-        </div> */}
-        {/* Preferred growing containers */}
-        {/* <label>Select your preference of growing containers:</label>
-        <div className="checkboxDiv">
-          <label htmlFor="Variously sized pots" className="checkboxLabel">
-            Variously sized pots
-            <input
-              type="checkbox"
-              name="Variously sized pots"
-              value="Variously sized pots"
-              onChange={(e) => {
-                if (e.target.checked) {
-                  updateForm(e.target.name, e.target.value, true, false);
-                } else {
-                  updateForm(e.target.name, e.target.value, true, true);
-                }
-              }}
-            ></input>
-          </label>
-        </div> */}
         {/* Experience level */}
         <div className="labelAndBtn">
           <label htmlFor="experienceLevel" className="marginTwo">
@@ -352,20 +312,6 @@ export function CreateGarden(props) {
               );
             })}
           </select>
-        </div>
-        {/* Hours per day commitment */}
-        <div className="labelAndBtn ">
-          <label htmlFor="hoursPerDay" className="marginTwo">
-            How many hours per day do you plan on comitting?
-          </label>
-          <input
-            type="number"
-            name="timePerDayCommitment"
-            step={1}
-            min={0}
-            value={form.timePerDayCommitment}
-            onChange={(e) => updateForm(e.target.name, e.target.value)}
-          ></input>
         </div>
 
         {/* Vegetables you want to grow */}
@@ -436,8 +382,9 @@ export function CreateGarden(props) {
             e.preventDefault();
             setIsDisabled(true);
             const newPlan = await createGardenPlan(form);
-            console.log(newPlan);
-            setPlan(newPlan);
+            const parsedPlan = JSON.parse(newPlan);
+            console.log(parsedPlan);
+            setPlan(parsedPlan);
             setIsDisabled(false);
           }}
           className={`mybtn ${isDisabled ? "disabled" : ""}`}
@@ -445,11 +392,7 @@ export function CreateGarden(props) {
           Make A Plan
         </button>
       </form>
-      <div
-        id="planBitch"
-        dangerouslySetInnerHTML={{ __html: plan ? plan : "" }}
-      ></div>
-      {/* {plan && renderPlan()} */}
+      {plan && renderPlan()}
 
       <Link to="/" className="mybtn">
         Exit

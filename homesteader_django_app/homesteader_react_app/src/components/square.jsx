@@ -21,6 +21,10 @@ Square.propTypes = {
   setOverlapped: PropTypes.func,
   gardenHeight: PropTypes.number,
   gardenWidth: PropTypes.number,
+  myStructures: PropTypes.array,
+  setMyStructures: PropTypes.func,
+  updateForm: PropTypes.func,
+  setForm: PropTypes.func,
 };
 
 export function Square(props) {
@@ -78,7 +82,19 @@ export function Square(props) {
           height: `${props.structure.height} ft`,
         },
       ]);
-      console.log(props.myStructures);
+      props.setForm((old) => {
+        return {
+          ...old,
+          preferredGrowingContainers: [
+            ...old.preferredGrowingContainers,
+            {
+              name: props.structure.name,
+              width: `${props.structure.width} ft`,
+              height: `${props.structure.height} ft`,
+            },
+          ],
+        };
+      });
       //if the current square is a structurePoint
     } else if (props.structurePoints.some((obj) => obj.id === props.id)) {
       const thisStructurePoint = props.structurePoints.filter((obj) => {
@@ -95,6 +111,21 @@ export function Square(props) {
         )?.name;
         if (targetName) {
           return old.filter((structure) => structure.name !== targetName);
+        } else {
+          return old;
+        }
+      });
+      props.setForm((old) => {
+        let targetName = props.structurePoints.find(
+          (obj) => obj.id === props.id
+        )?.name;
+        if (targetName) {
+          return {
+            ...old,
+            preferredGrowingContainers: old.preferredGrowingContainers.filter(
+              (structure) => structure.name !== targetName
+            ),
+          };
         } else {
           return old;
         }

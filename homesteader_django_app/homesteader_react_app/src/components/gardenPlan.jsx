@@ -4,9 +4,11 @@ import jsPDF from "jspdf";
 import { useState } from "react";
 import { createShoppingList } from "../assets/apiCalls";
 
-export function GardenPlan({ revisions, garden, finalAdvice }) {
+export function GardenPlan({ adjustmentsMade, garden, furtherAdvice }) {
   const [shoppingList, setShoppingList] = useState();
   const [isDisabled, setIsDisabled] = useState(false);
+
+  //! Doesn't work properly
   async function generatePDF() {
     const plan = document.querySelector(".content");
     const canvas = await html2canvas(plan);
@@ -45,53 +47,54 @@ export function GardenPlan({ revisions, garden, finalAdvice }) {
         </div>
         <div>
           <h3>Revisions</h3>
-          {revisions ? <p>{revisions}</p> : <p>none</p>}
+          {adjustmentsMade ? <p>{adjustmentsMade}</p> : <p>none</p>}
         </div>
         <div>
           <h3>Garden</h3>
-          {garden.map((plant) => {
+          {Object.keys(garden).map((containerKey) => {
+            const container = garden[containerKey];
             return (
-              <div key={plant.plantName} className="plantDiv">
+              <div
+                key={container.id + container.containerInfo}
+                className="containerDiv"
+              >
                 <p>
-                  <b>Plant: </b>
-                  {plant.plantName}
+                  <b>Container: </b>
+                  {container.containerInfo}
                 </p>
                 <p>
-                  <b>Number: </b>
-                  {plant.numberOfPlants}
+                  <b>Plants: </b>
+                </p>
+                {Object.keys(container.plants).map((plantInfo) => {
+                  const plant = container.plants[plantInfo];
+                  return (
+                    <div key={plant.id + plant.name} className="plantInfo">
+                      <p>{plant.name ? plant.name : plantInfo}</p>
+                      <p>
+                        Number of plants: {plant.numberOfPlantsPerContainer}
+                      </p>
+                      <p>Space per plant: {plant.plantSpacing}</p>
+                      <p>
+                        Watering needs: {plant.detailedWateringInstructions}
+                      </p>
+                      <p>When to plant: {plant.whenToPlant}</p>
+                      <p>First Yield: {plant.firstYield}</p>
+                    </div>
+                  );
+                })}
+                <p>
+                  <b>Instructions: </b> {container.detailedInstructions}
                 </p>
                 <p>
-                  <b>Tools needed: </b>
-                  {plant.toolsNeeded}
-                </p>
-                <p>
-                  <b>Recommended growing apparatus: </b>{" "}
-                  {plant.recommendedGrowingApparatus}
-                </p>
-                <p>
-                  <b>Recommended plant container: </b>{" "}
-                  {plant.recommendedPlantContainer}
-                </p>
-                <p>
-                  <b>Watering needs: </b> {plant.wateringNeeds}
-                </p>
-                <p>
-                  <b>Best soil: </b> {plant.bestSoilType}
-                </p>
-                <p>
-                  <b>Space needed: </b> {plant.spaceNeeded}
-                </p>
-                <p>
-                  <b>Other Advice: </b>
-                  {plant.otherAdvice}
+                  <b>Shopping list: </b> {container.shoppingList}
                 </p>
               </div>
             );
           })}
         </div>
         <div>
-          <h3>Final Advice</h3>
-          <p>{finalAdvice}</p>
+          <h3>Further Advice</h3>
+          <p>{furtherAdvice}</p>
         </div>
       </div>
       <button className="mybtn" onClick={generatePDF}>
