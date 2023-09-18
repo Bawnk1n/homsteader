@@ -3,10 +3,12 @@ import "../assets/gardenPlan.css";
 import jsPDF from "jspdf";
 import { useState } from "react";
 import { createShoppingList } from "../assets/apiCalls";
+import { Container } from "./containerDiv";
 
-export function GardenPlan({ adjustmentsMade, garden, furtherAdvice }) {
+export function GardenPlan({ specificRevisionsMade, garden, furtherAdvice }) {
   const [shoppingList, setShoppingList] = useState();
   const [isDisabled, setIsDisabled] = useState(false);
+  const [visibleContainer, setVisibleContainer] = useState(0);
 
   //! Doesn't work properly
   async function generatePDF() {
@@ -47,48 +49,34 @@ export function GardenPlan({ adjustmentsMade, garden, furtherAdvice }) {
         </div>
         <div>
           <h3>Revisions</h3>
-          {adjustmentsMade ? <p>{adjustmentsMade}</p> : <p>none</p>}
+          {specificRevisionsMade ? <p>{specificRevisionsMade}</p> : <p>none</p>}
+        </div>
+        <div id="buttons">
+          {garden.map((container) => {
+            return (
+              <button
+                id={container.id}
+                className="mybtn"
+                key={container.id}
+                onClick={() => {
+                  setVisibleContainer(container.id);
+                }}
+              >
+                {container.containerInfo}
+              </button>
+            );
+          })}
         </div>
         <div>
           <h3>Garden</h3>
-          {Object.keys(garden).map((containerKey) => {
-            const container = garden[containerKey];
+          {garden.map((container) => {
             return (
-              <div
-                key={container.id + container.containerInfo}
-                className="containerDiv"
-              >
-                <p>
-                  <b>Container: </b>
-                  {container.containerInfo}
-                </p>
-                <p>
-                  <b>Plants: </b>
-                </p>
-                {Object.keys(container.plants).map((plantInfo) => {
-                  const plant = container.plants[plantInfo];
-                  return (
-                    <div key={plant.id + plant.name} className="plantInfo">
-                      <p>{plant.name ? plant.name : plantInfo}</p>
-                      <p>
-                        Number of plants: {plant.numberOfPlantsPerContainer}
-                      </p>
-                      <p>Space per plant: {plant.plantSpacing}</p>
-                      <p>
-                        Watering needs: {plant.detailedWateringInstructions}
-                      </p>
-                      <p>When to plant: {plant.whenToPlant}</p>
-                      <p>First Yield: {plant.firstYield}</p>
-                    </div>
-                  );
-                })}
-                <p>
-                  <b>Instructions: </b> {container.detailedInstructions}
-                </p>
-                <p>
-                  <b>Shopping list: </b> {container.shoppingList}
-                </p>
-              </div>
+              <Container
+                container={container}
+                id={`container ${container.id}`}
+                key={`${container.id} ${container.containerInfo}`}
+                isHidden={visibleContainer === container.id ? false : true}
+              />
             );
           })}
         </div>

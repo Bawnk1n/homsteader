@@ -5,6 +5,10 @@
   padding: 4rem;
 }
 
+#buttons {
+  text-align: center;
+}
+
 .containerDiv {
   background-color: #f19541;
   padding: 1rem;

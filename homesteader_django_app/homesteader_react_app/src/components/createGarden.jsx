@@ -14,7 +14,12 @@ export function CreateGarden(props) {
   const [myStructures, setMyStructures] = useState([]);
   const [form, setForm] = useState({
     spaceAvailable: `${gardenWidth} x ${gardenHeight}ft`,
-    preferredGrowingContainers: [],
+    preferredGrowingContainers: [
+      { name: "Raised or Ground Bed", width: 4, height: 4 },
+      { name: "Raised or Ground Bed", width: 4, height: 4 },
+      { name: "Large Pot", width: 2, height: 2, diameter: "12 inches" },
+      { name: "Large Pot", width: 2, height: 2, diameter: "12 inches" },
+    ],
     experienceLevel: "beginner",
     climate: "Highlands / Mountainous",
     plants: [
@@ -216,7 +221,12 @@ export function CreateGarden(props) {
           <h2>Add Structures</h2>
           <button
             onClick={() =>
-              setStructure({ height: 1, width: 1, name: "Small or Med Pot" })
+              setStructure({
+                width: 1,
+                height: 1,
+                diameter: "six - eight inches",
+                name: "Small or Med Pot",
+              })
             }
             className="mybtn"
           >
@@ -224,7 +234,12 @@ export function CreateGarden(props) {
           </button>
           <button
             onClick={() =>
-              setStructure({ height: 2, width: 2, name: "Large Pot" })
+              setStructure({
+                width: 2,
+                height: 2,
+                diameter: "12 inches",
+                name: "Large Pot",
+              })
             }
             className="mybtn"
           >
@@ -382,17 +397,18 @@ export function CreateGarden(props) {
             e.preventDefault();
             setIsDisabled(true);
             const newPlan = await createGardenPlan(form);
-            const parsedPlan = JSON.parse(newPlan);
+            const parsedPlan = await JSON.parse(newPlan);
             console.log(parsedPlan);
-            setPlan(parsedPlan);
+            //setPlan(parsedPlan);
             setIsDisabled(false);
+            props.updatePlan(parsedPlan);
+            navigate("/plan");
           }}
           className={`mybtn ${isDisabled ? "disabled" : ""}`}
         >
           Make A Plan
         </button>
       </form>
-      {plan && renderPlan()}
 
       <Link to="/" className="mybtn">
         Exit

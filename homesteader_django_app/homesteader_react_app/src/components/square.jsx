@@ -91,6 +91,9 @@ export function Square(props) {
               name: props.structure.name,
               width: `${props.structure.width} ft`,
               height: `${props.structure.height} ft`,
+              diameter: `${
+                props.structure.diameter ? props.structure.diameter : ""
+              }`,
             },
           ],
         };

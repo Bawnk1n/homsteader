@@ -4,9 +4,7 @@ const api = import.meta.env.VITE_API_KEY;
 
 export async function createGardenPlan(gardenInfo) {
   const gardenSize = gardenInfo.spaceAvailable;
-  const experienceLevel = gardenInfo.experienceLevel;
   const climate = gardenInfo.climate;
-  const hoursPerDayCommitment = gardenInfo.timePerDayCommitment;
   const plants = gardenInfo.plants;
   // create a string version of the plants array
   let plantString = "";
@@ -21,9 +19,13 @@ export async function createGardenPlan(gardenInfo) {
   const preferredGrowingContainers = gardenInfo.preferredGrowingContainers;
 
   let preferredContainersString = "";
-
+  //making it so pots have a diameter and others have height x width
   for (let container of preferredGrowingContainers) {
-    preferredContainersString += `${container.name} (${container.width} x ${container.height}), `;
+    if (!container.diameter) {
+      preferredContainersString += `${container.name} (${container.width} x ${container.height}), `;
+    } else {
+      preferredContainersString += `${container.name} (${container.diameter} diameter), `;
+    }
   }
 
   preferredContainersString.trim();
@@ -40,16 +42,17 @@ export async function createGardenPlan(gardenInfo) {
     messages: [
       {
         role: "system",
-        content: `The user will give you information about a garden they want to create. Your job is to take the information they give you and return the best advice possible in the following format: JSON object: {garden: {container1: {id: integer, containerInfo: string, plants: {id: integer, name: string, plantSpacing: string, detailedWateringInstructions: string, numberOfPlantsPerContainer: integer, whenToPlant: string, firstYield: string}, detailedIntructions: string, shoppingList: string}, etc...}, adjustmentsMade: string, furtherAdvice: string}. Make any adjustments you deem necesarry. return ONLY valid JSON, no other dialogue`,
+        content: `The user will give you information about a garden they want to create. Your job is to take the information they give you and return the best advice possible in the following format: JSON object: {garden: [{id: integer, containerInfo: string, plants: [{id: integer, name: string, plantSpacing: string, detailedWateringInstructions: string, numberOfPlantsPerContainer: integer, whenToPlant: string, firstYield: string}, detailedInstructions: string, shoppingList: string}, etc...]}, etc...], specificRevisionsMade: string, furtherAdvice: string}. Each container should have its own object in the garden array. Make any adjustments you deem necesarry. return ONLY valid JSON, no other dialogue`,
       },
       {
         role: "user",
         content: userContent,
       },
     ],
-    model: "gpt-3.5-turbo",
+    model: "gpt-4",
   });
   //return response
+  console.log(completion);
   return completion.choices[0].message.content;
 }
 
