@@ -9,47 +9,29 @@ import { LoginButtons } from "./components/loginButtons";
 import { CreateGarden } from "./components/createGarden";
 import { GardenPlan } from "./components/gardenPlan";
 
-//took csrfToken out of functions, might work might not
-
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const storedValue = localStorage.getItem("isAuthenticated");
-    return storedValue ? JSON.parse(storedValue) : false;
+    let checkAuth = localStorage.getItem("isAuthenticated");
+    if (checkAuth === "true") {
+      return true;
+    } else {
+      return false;
+    }
   });
 
   const [plan, setPlan] = useState({});
 
-  useEffect(() => {
-    localStorage.setItem("isAuthenticated", JSON.stringify(isAuthenticated));
-  }, [isAuthenticated]);
-  //const csrfToken = getCookie("csrftoken"); might use this later, doesnt work currently with dev server
+  async function logout() {
+    console.log(getCookie("csrftoken"));
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/authenticateapi/", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCookie("csrftoken"),
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      });
-  }, []);
-
-  function logout() {
     if (isAuthenticated) {
-      fetch("http://127.0.0.1:8000/logoutapi/", {
+      fetch("http://localhost:8000/logoutapi", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": getCookie("csrftoken"),
         },
+        credentials: "include",
       })
         .then((response) => response.json())
         .then((data) => {
@@ -62,15 +44,20 @@ function App() {
   }
 
   function toggleAuthenticated() {
-    if (isAuthenticated) {
-      setIsAuthenticated(false);
-    } else {
-      setIsAuthenticated(true);
-    }
+    setIsAuthenticated(!isAuthenticated);
   }
 
-  function updatePlan(generatedPlan) {
-    setPlan(generatedPlan);
+  function updatePlan(generatedPlan, newGarden) {
+    if (newGarden) {
+      setPlan((old) => {
+        return {
+          ...old,
+          garden: newGarden,
+        };
+      });
+    } else {
+      setPlan(generatedPlan);
+    }
   }
   return (
     <BrowserRouter>
@@ -79,7 +66,12 @@ function App() {
           path="/"
           element={
             <div id="page">
-              {!isAuthenticated && <LoginButtons />}
+              {!isAuthenticated && (
+                <div>
+                  <NavBar logout={logout} isAuthenticated={isAuthenticated} />
+                  <LoginButtons />{" "}
+                </div>
+              )}
               {isAuthenticated && (
                 <div>
                   <NavBar logout={logout} isAuthenticated={isAuthenticated} />
@@ -95,7 +87,12 @@ function App() {
         />
         <Route
           path="login"
-          element={<LoginPage toggleAuthenticated={toggleAuthenticated} />}
+          element={
+            <LoginPage
+              toggleAuthenticated={toggleAuthenticated}
+              setIsAuthenticated={setIsAuthenticated}
+            />
+          }
         />
         <Route
           path="register"
@@ -115,9 +112,9 @@ function App() {
           path="plan"
           element={
             <GardenPlan
-              specificRevisionsMade={plan.specificRevisionsMade}
-              garden={plan.garden}
-              furtherAdvice={plan.furtherAdvice}
+              plan={plan}
+              updatePlan={updatePlan}
+              isAuthenticated={isAuthenticated}
             />
           }
         />

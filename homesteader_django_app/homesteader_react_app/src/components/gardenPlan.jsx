@@ -1,14 +1,35 @@
 import html2canvas from "html2canvas";
 import "../assets/gardenPlan.css";
 import jsPDF from "jspdf";
-import { useState } from "react";
-import { createShoppingList } from "../assets/apiCalls";
+import { useEffect, useRef, useState } from "react";
 import { Container } from "./containerDiv";
+import PropTypes from "prop-types";
+import { updateGardenPlan } from "../assets/apiCalls";
+import { useNavigate } from "react-router-dom";
+import { NavBar } from "./navbar";
 
-export function GardenPlan({ specificRevisionsMade, garden, furtherAdvice }) {
-  const [shoppingList, setShoppingList] = useState();
+GardenPlan.propTypes = {
+  plan: PropTypes.object,
+  updatePlan: PropTypes.func,
+  isAuthenticated: PropTypes.bool,
+};
+
+export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
+  const navigate = useNavigate();
+  const [localPlan, setLocalPlan] = useState(() => {
+    if (!plan || Object.keys(plan).length < 1) {
+      return JSON.parse(localStorage.getItem("gardenPlan"));
+    } else {
+      return plan;
+    }
+  });
+
+  let { specificRevisionsMade, singularContainers, furtherAdvice } = localPlan;
+  const garden = singularContainers;
+
   const [isDisabled, setIsDisabled] = useState(false);
   const [visibleContainer, setVisibleContainer] = useState(0);
+  const [changesTextArea, setChangesTextArea] = useState("");
 
   //! Doesn't work properly
   async function generatePDF() {
@@ -40,8 +61,32 @@ export function GardenPlan({ specificRevisionsMade, garden, furtherAdvice }) {
     pdf.save("garden_plan.pdf");
   }
 
+  async function updatePlanLocal(e) {
+    e.preventDefault();
+    if (!isDisabled) {
+      alert("Making changes to the plan.. this may take a minute or two.");
+      setIsDisabled(true);
+      try {
+        const newPlan = await updateGardenPlan(localPlan, changesTextArea);
+        const parsedPlan = JSON.parse(newPlan);
+
+        //updatePlan(parsedPlan);
+        setLocalPlan(parsedPlan);
+
+        setChangesTextArea("");
+        setIsDisabled(false);
+
+        //navigate("/plan");
+      } catch (error) {
+        console.log("an error occurred: ", error);
+        setIsDisabled(false);
+      }
+    }
+  }
+
   return (
     <>
+      <NavBar isAuthenticated={isAuthenticated} />
       <div className="content">
         <div>
           <h1>Garden Plan</h1>
@@ -49,7 +94,45 @@ export function GardenPlan({ specificRevisionsMade, garden, furtherAdvice }) {
         </div>
         <div>
           <h3>Revisions</h3>
-          {specificRevisionsMade ? <p>{specificRevisionsMade}</p> : <p>none</p>}
+          {specificRevisionsMade ? (
+            <div>
+              {/* <p>{specificRevisionsMade}</p> */}
+              <p>
+                Plants removed:{" "}
+                <b>
+                  {specificRevisionsMade.plantsRemoved
+                    ? specificRevisionsMade.plantsRemoved.join(", ")
+                    : "none"}
+                </b>
+              </p>
+              <p>
+                Plants added:{" "}
+                <b>
+                  {specificRevisionsMade.plantsAdded
+                    ? specificRevisionsMade.plantsAdded.join(", ")
+                    : "none"}
+                </b>
+              </p>
+              <p>
+                Containers removed:{" "}
+                <b>
+                  {specificRevisionsMade.containersRemoved
+                    ? specificRevisionsMade.containersRemoved.join(", ")
+                    : "none"}
+                </b>
+              </p>
+              <p>
+                Containers added:{" "}
+                <b>
+                  {specificRevisionsMade.containersAdded
+                    ? specificRevisionsMade.containersAdded.join(", ")
+                    : "none"}
+                </b>
+              </p>
+            </div>
+          ) : (
+            <p>none</p>
+          )}
         </div>
         <div id="buttons">
           {garden.map((container) => {
@@ -68,7 +151,6 @@ export function GardenPlan({ specificRevisionsMade, garden, furtherAdvice }) {
           })}
         </div>
         <div>
-          <h3>Garden</h3>
           {garden.map((container) => {
             return (
               <Container
@@ -80,32 +162,32 @@ export function GardenPlan({ specificRevisionsMade, garden, furtherAdvice }) {
             );
           })}
         </div>
-        <div>
+        <div id="furtherAdvice">
           <h3>Further Advice</h3>
           <p>{furtherAdvice}</p>
         </div>
+        <div>
+          <h4>
+            Want to make changes to the plan? describe the changes you want to
+            make below.
+          </h4>
+          <form>
+            <input
+              type="textarea"
+              width="250px"
+              placeholder="Add carrots, remove cucumbers..."
+              value={changesTextArea}
+              onChange={(e) => setChangesTextArea(e.target.value)}
+            ></input>
+            <button
+              className={`mybtn ${isDisabled ? "disabled" : ""}`}
+              onClick={updatePlanLocal}
+            >
+              Submit
+            </button>
+          </form>
+        </div>
       </div>
-      <button className="mybtn" onClick={generatePDF}>
-        Download as PDF
-      </button>
-      <button
-        onClick={async (e) => {
-          e.preventDefault();
-          setIsDisabled(true);
-          e.target.setAttribute("disabled", "disabled");
-          const shopping = await createShoppingList(garden);
-          setShoppingList(shopping);
-          e.target.removeAttribute("disabled");
-          setIsDisabled(false);
-        }}
-        className={`mybtn ${isDisabled ? "disabled" : ""}`}
-      >
-        Create shopping list
-      </button>
-
-      {shoppingList && (
-        <div dangerouslySetInnerHTML={{ __html: shoppingList }}></div>
-      )}
     </>
   );
 }

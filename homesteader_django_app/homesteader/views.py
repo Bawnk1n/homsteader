@@ -1,16 +1,25 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, logout
+from django.contrib.auth import authenticate, logout, login
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.core.exceptions import ValidationError
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from django.middleware.csrf import get_token
+from django.http import JsonResponse
+import json
 
 
 def index(request):
-
     return render(request, 'index.html')
+
+
+@csrf_exempt
+def get_csrf_token(request):
+    print('here2')
+    token = get_token(request)
+    return JsonResponse({"csrfToken": token})
 
 
 @api_view(['POST'])
@@ -41,23 +50,30 @@ def register(request):
         return Response({"Message": "Something went wrong when creating new user"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@ensure_csrf_cookie
-@api_view(['POST'])
 def login_api(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    user = authenticate(username=username, password=password)
+    if request.method == 'POST':
+        # Parse the JSON body of the request
+        data = json.loads(request.body.decode('utf-8'))
 
-    if user is not None:
-        return Response({"Message": "Login Succesful", "success": True}, status=status.HTTP_200_OK)
-    else:
-        return Response({"Message": "Invalid Credentials", "success": False}, status=status.HTTP_401_UNAUTHORIZED)
+        # Retrieve username and password
+        username = data.get('username')
+        password = data.get('password')
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            request.session['user_id'] = request.user.id
+            return JsonResponse({"Message": "Login Succesful", "success": True}, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({"Message": "Invalid Credentials", "success": False}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(["POST"])
+@ensure_csrf_cookie
 def logout_api(request):
-    logout(request)
-    return Response({"Message": "Logout Successful", "success": True}, status=status.HTTP_200_OK)
+    if request.method == 'POST':
+        request.session.flush()
+        logout(request)
+        return JsonResponse({"Message": "Logout Successful", "success": True}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

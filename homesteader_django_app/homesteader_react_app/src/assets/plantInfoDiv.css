@@ -1,0 +1,10 @@
+.moreInfo {
+  transition: max-height 0.7s ease-in-out;
+  max-height: 27rem;
+  overflow: hidden;
+}
+
+.centered {
+  align-self: center;
+  margin-left: 18.5rem;
+}

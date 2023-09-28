@@ -4,16 +4,24 @@ import { commonClimates } from "../assets/presetPlants";
 import "../assets/createGarden.css";
 import { PlantList } from "./plantList";
 import { Link } from "react-router-dom";
-import { createGardenPlan } from "../assets/apiCalls";
+import { createGardenPlan, fillContainer } from "../assets/apiCalls";
 import { useNavigate } from "react-router-dom";
 import { Square } from "./square";
+import PropTypes from "prop-types";
+import { GardenPlan } from "./gardenPlan";
+
+CreateGarden.propTypes = {
+  logout: PropTypes.func,
+  isAuthenticated: PropTypes.bool,
+  updatePlan: PropTypes.func,
+};
 
 export function CreateGarden(props) {
   const [gardenWidth, setGardenWidth] = useState(10);
   const [gardenHeight, setGardenHeight] = useState(5);
   const [myStructures, setMyStructures] = useState([]);
   const [form, setForm] = useState({
-    spaceAvailable: `${gardenWidth} x ${gardenHeight}ft`,
+    spaceAvailable: `${gardenWidth}ft x ${gardenHeight}ft`,
     preferredGrowingContainers: [
       { name: "Raised or Ground Bed", width: 4, height: 4 },
       { name: "Raised or Ground Bed", width: 4, height: 4 },
@@ -37,18 +45,7 @@ export function CreateGarden(props) {
       "Cherry Tomatoes",
     ],
   });
-
-  // useEffect(() => {
-  //   setForm((old) => {
-  //     return {
-  //       ...old,
-  //       preferredGrowingContainers: myStructures,
-  //     };
-  //   });
-  // }, [myStructures]);
-
-  const [plan, setPlan] = useState("");
-
+  //for API call button
   const [isDisabled, setIsDisabled] = useState(false);
 
   const navigate = useNavigate();
@@ -80,22 +77,12 @@ export function CreateGarden(props) {
       });
     }
   }
-
+  // Bools for hide/show buttons on form
   const [showVegetables, setShowVegetables] = useState(false);
   const [showFruits, setShowFruits] = useState(false);
   const [showHerbs, setShowHerbs] = useState(false);
   const [showFlowers, setShowFlowers] = useState(false);
   const [showOthers, setShowOthers] = useState(false);
-
-  function renderPlan() {
-    try {
-      console.log(plan);
-      props.updatePlan(plan);
-      navigate("/plan");
-    } catch (TypeError) {
-      return <p>yeet</p>;
-    }
-  }
 
   //------------------------Garden Grid Functionalities---------------------
 
@@ -110,8 +97,10 @@ export function CreateGarden(props) {
   });
   const [structurePoints, setStructurePoints] = useState([
     { id: "", structureIds: [] },
-  ]); //for storing a single point on a structure that also holds the structure size info to facilitate removing it properly
-  const [hoverArray, setHoverArray] = useState([]); //for proper hover effects of structure, and also enforcing non-overlap rules on the onClick
+  ]);
+  //for storing a single point on a structure that also holds the structure size info to facilitate removing it properly
+  const [hoverArray, setHoverArray] = useState([]);
+  //for proper hover effects of structure, and also enforcing non-overlap rules on the onClick
   const [overlapped, setOverlapped] = useState(false);
 
   function updateSelectedArray(squareId, remove) {
@@ -122,20 +111,44 @@ export function CreateGarden(props) {
     }
   }
 
-  //----------ORIGINAL API CALL FUNCTION-------------------
-  async function origApiCall(e) {
+  // Original API call
+  async function originalAPICall(e) {
     e.preventDefault();
-    setIsDisabled(true);
-    e.target.setAttribute("disabled", "disabled");
-    const newPlan = await createGardenPlan(form);
-    console.log(newPlan);
-    const cleanedPlan = newPlan.replace(/\\n/g, "").replace(/\s+/g, " ").trim();
-    console.log(cleanedPlan);
-    const parsedPlan = JSON.parse(cleanedPlan);
-    console.log("parsedPlan: ", parsedPlan);
-    setPlan(parsedPlan);
-    e.target.removeAttribute("disabled");
-    setIsDisabled(false);
+    if (!isDisabled) {
+      setIsDisabled(true);
+      const newPlan = await createGardenPlan(form);
+      const parsedPlan = await JSON.parse(newPlan);
+      setIsDisabled(false);
+      localStorage.setItem("gardenPlan", JSON.stringify(parsedPlan));
+      props.updatePlan(parsedPlan);
+      navigate("/plan");
+    }
+  }
+
+  const [newGardenPlan, setNewGardenPlan] = useState({
+    containers: [],
+    leftoverContainers: [],
+    leftoverPlants: [],
+  });
+
+  console.log(newGardenPlan);
+
+  //new API call (meant to be called for each container in an array)
+  async function fillContainerOnClick(e, container, plants) {
+    e.preventDefault();
+    const info = `the climate I live in is ${form.climate}`;
+    let response;
+    try {
+      response = await fillContainer(container, plants, info);
+    } catch (error) {
+      console.log("error ", error);
+    }
+    if (!response) {
+      return false;
+    }
+    const responseObject = JSON.parse(response);
+    console.log("responseObject", responseObject);
+    return [responseObject.container, responseObject.leftoverPlants];
   }
 
   return (
@@ -392,17 +405,45 @@ export function CreateGarden(props) {
           </label>
         </div>
         <button
-          // onClick={origApiCall}
           onClick={async (e) => {
             e.preventDefault();
-            setIsDisabled(true);
-            const newPlan = await createGardenPlan(form);
-            const parsedPlan = await JSON.parse(newPlan);
-            console.log(parsedPlan);
-            //setPlan(parsedPlan);
-            setIsDisabled(false);
-            props.updatePlan(parsedPlan);
-            navigate("/plan");
+            if (!isDisabled) {
+              setIsDisabled(true);
+              let plants = form.plants;
+              const containersArray = [];
+              for (const container of form.preferredGrowingContainers) {
+                if (plants.length < 1) {
+                  setNewGardenPlan((old) => {
+                    return {
+                      ...old,
+                      leftoverContainers: [
+                        ...old.leftoverContainers,
+                        container,
+                      ],
+                    };
+                  });
+                } else {
+                  const response = await fillContainerOnClick(
+                    e,
+                    container,
+                    plants
+                  );
+                  console.log(response[0]);
+                  containersArray.push(response[0]);
+                  plants = response[1];
+                }
+              }
+              setNewGardenPlan((old) => {
+                return {
+                  ...old,
+                  containers: containersArray,
+                  leftoverPlants: plants,
+                };
+              });
+              setIsDisabled(false);
+              props.updatePlan(newGardenPlan);
+              navigate("/plan/");
+            }
           }}
           className={`mybtn ${isDisabled ? "disabled" : ""}`}
         >

@@ -8,18 +8,24 @@ const LoginPage = (props) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log("here");
     if (!username || !password) {
       alert("please enter a valid username and password");
       return;
     } else {
-      fetch("http://localhost:8000/loginapi/", {
+      const tokenResponse = await fetch("http://localhost:8000/gettoken");
+
+      const tokenObject = await tokenResponse.json();
+      const token = tokenObject.csrfToken;
+
+      document.cookie = `csrftoken=${token}`;
+
+      fetch("http://localhost:8000/loginapi", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
+          "X-CSRFToken": token,
         },
         credentials: "include",
         body: JSON.stringify({
@@ -35,9 +41,10 @@ const LoginPage = (props) => {
           }
         })
         .then((data) => {
-          console.log("Success:", data);
           if (data.success) {
-            props.toggleAuthenticated();
+            console.log("Success:", data);
+            props.setIsAuthenticated(true);
+            localStorage.setItem("isAuthenticated", "true");
             navigate("/");
           }
         })

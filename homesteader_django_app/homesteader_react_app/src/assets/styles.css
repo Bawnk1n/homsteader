@@ -46,3 +46,7 @@ input {
 .btn[disabled] {
   opacity: 0.5;
 }
+
+.nav-item {
+  margin: 0 0rem 0 1rem;
+}

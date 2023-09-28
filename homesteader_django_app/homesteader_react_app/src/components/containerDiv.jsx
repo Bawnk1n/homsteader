@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
+import { PlantInfoDiv } from "./plantInfoDiv";
 
 Container.propTypes = {
   container: PropTypes.object,
@@ -13,26 +14,19 @@ export function Container({ container, isHidden }) {
       style={{ display: isHidden ? "none" : "block" }}
     >
       <p>
-        <b>Container: </b>
-        {container.containerInfo}
+        <b>{container.containerInfo}</b>
       </p>
-      <p>
-        <b>Plants: </b>
-      </p>
+
       {container.plants.map((plant) => {
         return (
-          <div key={`${plant.id} ${plant.name} yoot`} className="plantInfo">
-            <p>{plant.name}</p>
-            <p>Number of plants: {plant.numberOfPlantsPerContainer}</p>
-            <p>Space per plant: {plant.plantSpacing}</p>
-            <p>Watering needs: {plant.detailedWateringInstructions}</p>
-            <p>When to plant: {plant.whenToPlant}</p>
-            <p>First Yield: {plant.firstYield}</p>
-          </div>
+          <PlantInfoDiv key={`${plant.id} ${plant.name} yoot`} plant={plant} />
         );
       })}
       <p>
         <b>Instructions: </b> {container.detailedInstructions}
+      </p>
+      <p>
+        <b>Tips: </b> {container.generalTipsAndTricks}
       </p>
       <p>
         <b>Shopping list: </b> {container.shoppingList}
