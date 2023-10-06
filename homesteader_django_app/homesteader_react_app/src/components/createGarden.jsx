@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Square } from "./square";
 import PropTypes from "prop-types";
 import { GardenPlan } from "./gardenPlan";
+import { LoadingSquare } from "./loadingSquare";
 
 CreateGarden.propTypes = {
   logout: PropTypes.func,
@@ -20,6 +21,8 @@ export function CreateGarden(props) {
   const [gardenWidth, setGardenWidth] = useState(10);
   const [gardenHeight, setGardenHeight] = useState(5);
   const [myStructures, setMyStructures] = useState([]);
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     spaceAvailable: `${gardenWidth}ft x ${gardenHeight}ft`,
     preferredGrowingContainers: [
@@ -45,10 +48,51 @@ export function CreateGarden(props) {
       "Cherry Tomatoes",
     ],
   });
+
+  const [newGardenPlan, setNewGardenPlan] = useState({
+    containers: [],
+    leftoverContainers: [],
+    leftoverPlants: [],
+  });
+
+  console.log(newGardenPlan);
   //for API call button
   const [isDisabled, setIsDisabled] = useState(false);
+  const [loadingBar, setLoadingBar] = useState(false);
+  //need these for for...of loop in make a plan button
+  //have them scoped globally because I'm making a loading bar using their properties
+  const [containersArray, setContainersArray] = useState([]);
+  const [leftoverContainers, setLeftoverContainers] = useState([]);
+  const [remainingPlants, setRemainingPlants] = useState(form.plants);
+  const [done, setDone] = useState(false);
 
-  const navigate = useNavigate();
+  const { updatePlan } = props;
+
+  useEffect(() => {
+    updatePlan({
+      leftoverContainers: leftoverContainers,
+      containers: containersArray,
+      leftoverPlants: remainingPlants,
+    });
+    localStorage.setItem(
+      "gardenPlan",
+      JSON.stringify({
+        leftoverContainers: leftoverContainers,
+        containers: containersArray,
+        leftoverPlants: remainingPlants,
+      })
+    );
+  }, [containersArray, leftoverContainers]);
+
+  useEffect(() => {
+    setRemainingPlants(form.plants);
+  }, [form.plants]);
+
+  useEffect(() => {
+    if (done) {
+      navigate("/plan");
+    }
+  }, [done]);
 
   function updateForm(key, value, updateArray, removeElement) {
     //add plant to plant array
@@ -111,35 +155,14 @@ export function CreateGarden(props) {
     }
   }
 
-  // Original API call
-  async function originalAPICall(e) {
-    e.preventDefault();
-    if (!isDisabled) {
-      setIsDisabled(true);
-      const newPlan = await createGardenPlan(form);
-      const parsedPlan = await JSON.parse(newPlan);
-      setIsDisabled(false);
-      localStorage.setItem("gardenPlan", JSON.stringify(parsedPlan));
-      props.updatePlan(parsedPlan);
-      navigate("/plan");
-    }
-  }
-
-  const [newGardenPlan, setNewGardenPlan] = useState({
-    containers: [],
-    leftoverContainers: [],
-    leftoverPlants: [],
-  });
-
-  console.log(newGardenPlan);
-
   //new API call (meant to be called for each container in an array)
-  async function fillContainerOnClick(e, container, plants) {
+
+  async function fillContainerOnClick(e, container, plants, id) {
     e.preventDefault();
     const info = `the climate I live in is ${form.climate}`;
     let response;
     try {
-      response = await fillContainer(container, plants, info);
+      response = await fillContainer(container, plants, info, id);
     } catch (error) {
       console.log("error ", error);
     }
@@ -409,51 +432,74 @@ export function CreateGarden(props) {
             e.preventDefault();
             if (!isDisabled) {
               setIsDisabled(true);
+              setLoadingBar(true);
+
               let plants = form.plants;
-              const containersArray = [];
+              let index = 0;
               for (const container of form.preferredGrowingContainers) {
                 if (plants.length < 1) {
-                  setNewGardenPlan((old) => {
-                    return {
-                      ...old,
-                      leftoverContainers: [
-                        ...old.leftoverContainers,
-                        container,
-                      ],
-                    };
-                  });
+                  setLeftoverContainers((prev) => [...prev, container]);
                 } else {
                   const response = await fillContainerOnClick(
                     e,
                     container,
-                    plants
+                    plants,
+                    index
                   );
                   console.log(response[0]);
-                  containersArray.push(response[0]);
+                  setContainersArray((prev) => [...prev, response[0]]);
+                  setRemainingPlants(response[1]);
                   plants = response[1];
+                  index++;
                 }
               }
               setNewGardenPlan((old) => {
                 return {
-                  ...old,
+                  leftoverContainers: leftoverContainers,
                   containers: containersArray,
-                  leftoverPlants: plants,
+                  leftoverPlants: remainingPlants,
                 };
               });
               setIsDisabled(false);
-              props.updatePlan(newGardenPlan);
-              navigate("/plan/");
+
+              setDone(true);
             }
           }}
           className={`mybtn ${isDisabled ? "disabled" : ""}`}
         >
           Make A Plan
         </button>
+        {loadingBar && (
+          <div id="loadingDiv">
+            <h4>
+              Filling containers..
+              {`${containersArray.length + leftoverContainers.length} / ${
+                form.preferredGrowingContainers.length
+              }`}
+            </h4>
+            <div id="loadingSquareDiv">
+              {form.preferredGrowingContainers.map((container, index) => {
+                return (
+                  <LoadingSquare
+                    key={index}
+                    id={index}
+                    unloaded={
+                      index > containersArray.length + leftoverContainers.length
+                    }
+                    next={
+                      index ===
+                      containersArray.length + leftoverContainers.length
+                    }
+                    loaded={
+                      index < containersArray.length + leftoverContainers.length
+                    }
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
       </form>
-
-      <Link to="/" className="mybtn">
-        Exit
-      </Link>
     </div>
   );
 }

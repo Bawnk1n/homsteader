@@ -7,6 +7,7 @@ import PropTypes from "prop-types";
 import { updateGardenPlan } from "../assets/apiCalls";
 import { useNavigate } from "react-router-dom";
 import { NavBar } from "./navbar";
+import Unknown from "../assets/images/question-circle.svg";
 
 GardenPlan.propTypes = {
   plan: PropTypes.object,
@@ -24,12 +25,16 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
     }
   });
 
-  let { specificRevisionsMade, singularContainers, furtherAdvice } = localPlan;
-  const garden = singularContainers;
+  let { containers, leftoverContainers, leftoverPlants } = localPlan;
+
+  useEffect(() => {
+    localStorage.setItem("gardenPlan", JSON.stringify(localPlan));
+  }, [localPlan]);
 
   const [isDisabled, setIsDisabled] = useState(false);
-  const [visibleContainer, setVisibleContainer] = useState(0);
+  const [visibleContainer, setVisibleContainer] = useState();
   const [changesTextArea, setChangesTextArea] = useState("");
+  const [isRevising, setIsRevising] = useState(false);
 
   //! Doesn't work properly
   async function generatePDF() {
@@ -63,25 +68,6 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
 
   async function updatePlanLocal(e) {
     e.preventDefault();
-    if (!isDisabled) {
-      alert("Making changes to the plan.. this may take a minute or two.");
-      setIsDisabled(true);
-      try {
-        const newPlan = await updateGardenPlan(localPlan, changesTextArea);
-        const parsedPlan = JSON.parse(newPlan);
-
-        //updatePlan(parsedPlan);
-        setLocalPlan(parsedPlan);
-
-        setChangesTextArea("");
-        setIsDisabled(false);
-
-        //navigate("/plan");
-      } catch (error) {
-        console.log("an error occurred: ", error);
-        setIsDisabled(false);
-      }
-    }
   }
 
   return (
@@ -94,98 +80,135 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
         </div>
         <div>
           <h3>Revisions</h3>
-          {specificRevisionsMade ? (
-            <div>
-              {/* <p>{specificRevisionsMade}</p> */}
-              <p>
-                Plants removed:{" "}
-                <b>
-                  {specificRevisionsMade.plantsRemoved
-                    ? specificRevisionsMade.plantsRemoved.join(", ")
-                    : "none"}
-                </b>
-              </p>
-              <p>
-                Plants added:{" "}
-                <b>
-                  {specificRevisionsMade.plantsAdded
-                    ? specificRevisionsMade.plantsAdded.join(", ")
-                    : "none"}
-                </b>
-              </p>
-              <p>
-                Containers removed:{" "}
-                <b>
-                  {specificRevisionsMade.containersRemoved
-                    ? specificRevisionsMade.containersRemoved.join(", ")
-                    : "none"}
-                </b>
-              </p>
-              <p>
-                Containers added:{" "}
-                <b>
-                  {specificRevisionsMade.containersAdded
-                    ? specificRevisionsMade.containersAdded.join(", ")
-                    : "none"}
-                </b>
-              </p>
-            </div>
-          ) : (
-            <p>none</p>
-          )}
+          <p>
+            Leftover containers:{" "}
+            {leftoverContainers.length > 0
+              ? leftoverContainers.join(", ")
+              : "None"}
+          </p>
+
+          <p>
+            Leftover plants:{" "}
+            {leftoverPlants.length > 0 ? leftoverPlants.join(", ") : "None"}
+          </p>
+          <div className="flex">
+            {leftoverPlants.map((plant) => {
+              return (
+                <div key={plant} className="leftoverPlant">
+                  <h6>{plant}</h6>
+                  <button
+                    className={`mybtn ${!visibleContainer ? "disabled" : null}`}
+                    onClick={() => {
+                      //dont do anything if no container is selected
+                      if (!visibleContainer) {
+                        return null;
+                      }
+                      setLocalPlan((old) => {
+                        const newContainers = old.containers.map(
+                          (container) => {
+                            if (container.id === visibleContainer) {
+                              return {
+                                ...container,
+                                plants: [
+                                  ...container.plants,
+                                  {
+                                    name: plant,
+                                    numberOfPlants: "?",
+                                    plantingInstructions: "?",
+                                    whenToPlant: "?",
+                                    firstYield: "?",
+                                    generalTipsAndTricks: "?",
+                                    littleKnownFact: "?",
+                                    advancedGardeningTip: "?",
+                                  },
+                                ],
+                                //added needsRevision here to make sure we know which containers need to be sent back to the ai
+                                needsRevision: true,
+                              };
+                            } else {
+                              return container;
+                            }
+                          }
+                        );
+                        return {
+                          ...old,
+                          containers: newContainers,
+                          leftoverPlants: old.leftoverPlants.filter(
+                            (name) => name !== plant
+                          ),
+                        };
+                      });
+                    }}
+                  >
+                    Add to current container
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </div>
         <div id="buttons">
-          {garden.map((container) => {
+          <h3>Containers</h3>
+          {containers.map((container) => {
+            let result = container.name.match(
+              /Large Pot|Raised or Ground Bed/i
+            );
+            let src;
+            if (result === null) {
+              src = Unknown;
+            } else {
+              switch (result[0]) {
+                case null:
+                  src = Unknown;
+                  break;
+                case "Large Pot":
+                  src = "Large Pot";
+                  break;
+                case "Raised or Ground Bed":
+                  src = "Raised or Ground Bed";
+                  break;
+                case "Small Pot":
+                  src = "Small Pot";
+              }
+            }
+
             return (
-              <button
-                id={container.id}
-                className="mybtn"
+              <img
+                src={
+                  src === Unknown ? Unknown : `../src/assets/images/${src}.png`
+                }
                 key={container.id}
                 onClick={() => {
-                  setVisibleContainer(container.id);
+                  if (!isRevising) {
+                    setVisibleContainer(container.id);
+                  }
                 }}
-              >
-                {container.containerInfo}
-              </button>
-            );
-          })}
-        </div>
-        <div>
-          {garden.map((container) => {
-            return (
-              <Container
-                container={container}
-                id={`container ${container.id}`}
-                key={`${container.id} ${container.containerInfo}`}
-                isHidden={visibleContainer === container.id ? false : true}
+                alt={container.name}
+                className="btnImg"
               />
             );
           })}
         </div>
-        <div id="furtherAdvice">
-          <h3>Further Advice</h3>
-          <p>{furtherAdvice}</p>
-        </div>
         <div>
-          <h4>
-            Want to make changes to the plan? describe the changes you want to
-            make below.
-          </h4>
-          <form>
-            <input
-              type="textarea"
-              width="250px"
-              placeholder="Add carrots, remove cucumbers..."
-              value={changesTextArea}
-              onChange={(e) => setChangesTextArea(e.target.value)}
-            ></input>
-            <button
-              className={`mybtn ${isDisabled ? "disabled" : ""}`}
-              onClick={updatePlanLocal}
-            >
-              Submit
-            </button>
-          </form>
+          {containers.map((container) => {
+            return (
+              <div key={`${container.id} ${container.name}`}>
+                {visibleContainer === container.id && (
+                  <h4 className="containerHeader">{container.name}</h4>
+                )}
+                <Container
+                  container={container}
+                  id={`container ${container.name} ${container.id}`}
+                  isHidden={visibleContainer === container.id ? false : true}
+                  setLocalPlan={setLocalPlan}
+                  localPlan={localPlan}
+                  setIsRevising={setIsRevising}
+                  isRevising={isRevising}
+                />
+              </div>
+            );
+          })}
+          <button className="mybtn border-radius">Save Garden</button>
         </div>
       </div>
     </>

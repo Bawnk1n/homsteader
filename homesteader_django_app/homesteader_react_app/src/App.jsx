@@ -59,6 +59,8 @@ function App() {
       setPlan(generatedPlan);
     }
   }
+
+  console.log(plan);
   return (
     <BrowserRouter>
       <Routes>

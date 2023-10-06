@@ -4,7 +4,14 @@
   overflow: hidden;
 }
 
-.centered {
-  align-self: center;
-  margin-left: 18.5rem;
+.plantInfo {
+  background-color: #fccb84;
+  /* box-shadow: 0 0 2px 0 black; */
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 9px;
+  /* font-weight: bold; */
+  border: 2px solid black;
+  /* text-align: left; */
+  border-radius: 90px;
 }

@@ -17,7 +17,7 @@ export function NavBar(props) {
         <Link to="/plan/" className="nav-item">
           My Plan
         </Link>
-        <p className="nav-item">nav item 2</p>
+        <p className="nav-item">nav item 3</p>
       </div>
       <div>
         {props.isAuthenticated && (

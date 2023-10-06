@@ -127,7 +127,7 @@ export async function updateGardenPlan(plan, changes) {
 }
 
 //trying to create an api call designed to be called for each element of an 'containers' array
-export async function fillContainer(container, plants, info) {
+export async function fillContainer(container, plants, info, id) {
   if (plants.length < 1) {
     return false;
   }
@@ -152,19 +152,25 @@ export async function fillContainer(container, plants, info) {
         content: `You are a knowledgeable garden organizer. You will be given a container of a specified size, a list of plants, and general information about the user garden. Your job is to fill the container with whichever plants will harmonize the best with eachother and to maximize the available space. return your answer in the following format: 
           {
             "container": {
-            "name": string, 
-            "plants": [
-              {
-                "name": string, 
-                "plantingInstructions": string, 
-                "generalTipsAndTricks": string, 
-                "littleKnownFact": string
-              }, 
-              etc..
-            ], 
-            "instructions": string, 
-            "usefulAdvice": string, 
-            "shoppingList": string
+              "id": integer,
+              "name": string, 
+              "plants": [
+                {
+                  "id": integer
+                  "name": string, 
+                  "plantingInstructions": string, 
+                  "whenToPlant": string,
+                  "firstYield": string,
+                  "numberOfPlants": integer,
+                  "generalTipsAndTricks": string, 
+                  "littleKnownFact": string,
+                  "advancedGardeningTip": string,
+                }, 
+                etc..
+              ], 
+              "instructions": string, 
+              "usefulAdvice": string, 
+              "shoppingList": string
             }, 
             "leftoverPlants": [name, name, etc..]
           }
@@ -172,7 +178,32 @@ export async function fillContainer(container, plants, info) {
       },
       {
         role: "user",
-        content: `the container is this: ${containerString}, my array of potential plants is this: ${plants}. Some general info about my garden: ${info}`,
+        content: `the container is this: ${containerString}, my array of potential plants is this: ${plants}. Some general info about my garden: ${info}. the ID for this container is ${id}`,
+      },
+    ],
+    model: "gpt-4",
+  });
+  //return response
+  console.log(completion.choices[0].message.content);
+  return completion.choices[0].message.content;
+}
+
+//API call for revising containers that the user has made changes to in gardenPlan
+export async function reviseContainer(container) {
+  const openai = new OpenAI({ apiKey: api, dangerouslyAllowBrowser: true });
+
+  const completion = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `You are a knowledgeable garden organizer. You will be given an incomplete and/or poorly organized plan for a garden container of a specified size, your job is to make whatever adjustments necessary to the 
+        plan to make sure the container is organized in the most effective and efficient way. Return an object in the same format as the original object the user gives you, and make sure to leave the 'id' value the same. 
+        If there are too many plants and some of them don't fit AT ALL into the container, you may add a leftoverPlants key to the container object containing an array in this format: leftoverPlants: [plantName1, plantName2, etc..]. Make sure to only add plants that are not present AT ALL in the container into this array.
+        Return ONLY the VALID JSON object with ZERO dialogue. If you give any dialogue, a kitten dies`,
+      },
+      {
+        role: "user",
+        content: `My current container object is this: ${container}.`,
       },
     ],
     model: "gpt-4",
