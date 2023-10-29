@@ -55,7 +55,7 @@ export function CreateGarden(props) {
     leftoverPlants: [],
   });
 
-  console.log(newGardenPlan);
+  // console.log(newGardenPlan);
   //for API call button
   const [isDisabled, setIsDisabled] = useState(false);
   const [loadingBar, setLoadingBar] = useState(false);
@@ -170,7 +170,7 @@ export function CreateGarden(props) {
       return false;
     }
     const responseObject = JSON.parse(response);
-    console.log("responseObject", responseObject);
+    // console.log("responseObject", responseObject);
     return [responseObject.container, responseObject.leftoverPlants];
   }
 
@@ -446,7 +446,7 @@ export function CreateGarden(props) {
                     plants,
                     index
                   );
-                  console.log(response[0]);
+                  // console.log(response[0]);
                   setContainersArray((prev) => [...prev, response[0]]);
                   setRemainingPlants(response[1]);
                   plants = response[1];

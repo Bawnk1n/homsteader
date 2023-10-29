@@ -11,21 +11,24 @@ const RegisterPage = (props) => {
 
   const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     console.log("here");
-    const csrfToken = getCookie("csrftoken");
-    console.log(csrfToken);
+    const cookie = getCookie("csrftoken");
+    console.log(cookie);
     if (password !== passwordMatch) {
       alert("passwords do not match");
       return;
     } else {
-      fetch("http://127.0.0.1:8000/registerapi/", {
+      const cookie = getCookie("csrftoken");
+
+      fetch("http://localhost:8000/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
+          "X-CSRFToken": cookie,
         },
+        credentials: "include",
         body: JSON.stringify({
           username: username,
           password: password,
@@ -39,7 +42,7 @@ const RegisterPage = (props) => {
           props.toggleAuthenticated();
           navigate("/");
         })
-        .catch((error) => console.log("Error", error));
+        .catch((error) => console.log("Error: ", error));
     }
   }
 

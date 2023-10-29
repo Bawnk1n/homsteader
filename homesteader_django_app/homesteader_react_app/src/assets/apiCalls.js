@@ -72,7 +72,7 @@ export async function createGardenPlan(gardenInfo) {
     model: "gpt-4",
   });
   //return response
-  console.log(completion);
+  // console.log(completion);
   return completion.choices[0].message.content;
 }
 //! not used atm
@@ -105,7 +105,7 @@ export async function createShoppingList(plan) {
 export async function updateGardenPlan(plan, changes) {
   const openai = new OpenAI({ apiKey: api, dangerouslyAllowBrowser: true });
 
-  console.log(plan, changes);
+  // console.log(plan, changes);
 
   const completion = await openai.chat.completions.create({
     messages: [
@@ -122,7 +122,7 @@ export async function updateGardenPlan(plan, changes) {
     ],
     model: "gpt-4",
   });
-  console.log(completion.choices[0].message.content);
+  // console.log(completion.choices[0].message.content);
   return completion.choices[0].message.content;
 }
 
@@ -135,15 +135,17 @@ export async function fillContainer(container, plants, info, id) {
 
   let containerString;
   if (!container.diameter) {
-    containerString = `a ${container.width}ft x ${container.height}ft ${container.name}`;
+    containerString = `${container.width}ft x ${container.height}ft`;
   } else {
-    containerString = `a ${container.name} with a diameter of ${container.diameter}`;
+    containerString = `diameter of ${container.diameter}`;
   }
 
-  const userContent = `the container is this: ${containerString}, my list of potential plants is this: ${plants.join(
+  const userContent = `the container is this: a ${
+    container.name
+  }, with a size of: ${containerString}, my list of potential plants is this: ${plants.join(
     ", "
   )}. Some general info about my garden: ${info}`;
-  console.log(userContent);
+  // console.log(userContent);
 
   const completion = await openai.chat.completions.create({
     messages: [
@@ -154,6 +156,7 @@ export async function fillContainer(container, plants, info, id) {
             "container": {
               "id": integer,
               "name": string, 
+              "size": string,
               "plants": [
                 {
                   "id": integer
@@ -178,13 +181,13 @@ export async function fillContainer(container, plants, info, id) {
       },
       {
         role: "user",
-        content: `the container is this: ${containerString}, my array of potential plants is this: ${plants}. Some general info about my garden: ${info}. the ID for this container is ${id}`,
+        content: `the container is this: a ${container.name} whose size is: ${containerString}, my array of potential plants is this: ${plants}. Some general info about my garden: ${info}. the ID for this container is ${id}`,
       },
     ],
     model: "gpt-4",
   });
   //return response
-  console.log(completion.choices[0].message.content);
+  // console.log(completion.choices[0].message.content);
   return completion.choices[0].message.content;
 }
 
@@ -209,6 +212,6 @@ export async function reviseContainer(container) {
     model: "gpt-4",
   });
   //return response
-  console.log(completion.choices[0].message.content);
+  // console.log(completion.choices[0].message.content);
   return completion.choices[0].message.content;
 }

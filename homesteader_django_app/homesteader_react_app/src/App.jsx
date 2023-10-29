@@ -8,6 +8,7 @@ import { NavBar } from "./components/navbar";
 import { LoginButtons } from "./components/loginButtons";
 import { CreateGarden } from "./components/createGarden";
 import { GardenPlan } from "./components/gardenPlan";
+import { MyGarden } from "./components/myGarden";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -60,31 +61,18 @@ function App() {
     }
   }
 
-  console.log(plan);
+  // console.log(plan);
   return (
     <BrowserRouter>
       <Routes>
         <Route
           path="/"
           element={
-            <div id="page">
-              {!isAuthenticated && (
-                <div>
-                  <NavBar logout={logout} isAuthenticated={isAuthenticated} />
-                  <LoginButtons />{" "}
-                </div>
-              )}
-              {isAuthenticated && (
-                <div>
-                  <NavBar logout={logout} isAuthenticated={isAuthenticated} />
-                  <div id="content">
-                    <Link to="/create" className="mybtn">
-                      Create a Garden
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
+            <MyGarden
+              isAuthenticated={isAuthenticated}
+              toggleAuthenticated={toggleAuthenticated}
+              logout={logout}
+            />
           }
         />
         <Route

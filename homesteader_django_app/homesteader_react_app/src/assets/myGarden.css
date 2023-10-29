@@ -1,0 +1,35 @@
+#not_authenticated {
+  margin-top: 10rem;
+}
+
+#content {
+  margin: 2rem;
+  margin-top: 10rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: beige;
+}
+
+#containers {
+}
+
+.gardenContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: bisque;
+  text-align: center;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.containerPlants {
+  display: flex;
+}
+
+.plant {
+  margin-right: 1rem;
+}

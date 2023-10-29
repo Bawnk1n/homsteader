@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'homesteader'
 ]
 
 MIDDLEWARE = [
@@ -125,16 +126,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "http://Localhost:8000"
+    "http://localhost:5174",
+    "http://localhost:8000"
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 
 # CSRF Settings
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = True
 # Change this to your frontend domain
 CSRF_COOKIE_DOMAIN = "localhost:5173"
 # Add frontend domain or IP here too, if needed
-CSRF_TRUSTED_ORIGINS = ['http://localhost:5173',
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', 'http://localhost:5174',
                         'http://127.0.0.1', 'http://localhost:8000']
 # Possible values: 'Strict', 'Lax', 'None', or None (Python None)
 SESSION_COOKIE_SAMESITE = 'None'
@@ -142,7 +144,7 @@ CSRF_COOKIE_SAMESITE = 'None'
 
 # If you set it to 'None', make sure your cookies are secure; otherwise, they may be rejected by the browser
 SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+
 SESSION_COOKIE_AGE = 1209600  # 2 weeks, in seconds
 
 

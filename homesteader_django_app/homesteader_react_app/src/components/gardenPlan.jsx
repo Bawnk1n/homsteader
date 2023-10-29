@@ -8,6 +8,7 @@ import { updateGardenPlan } from "../assets/apiCalls";
 import { useNavigate } from "react-router-dom";
 import { NavBar } from "./navbar";
 import Unknown from "../assets/images/question-circle.svg";
+import { getCookie } from "../assets/getCookie";
 
 GardenPlan.propTypes = {
   plan: PropTypes.object,
@@ -29,6 +30,7 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
 
   useEffect(() => {
     localStorage.setItem("gardenPlan", JSON.stringify(localPlan));
+    console.log(localPlan);
   }, [localPlan]);
 
   const [isDisabled, setIsDisabled] = useState(false);
@@ -97,10 +99,12 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
                 <div key={plant} className="leftoverPlant">
                   <h6>{plant}</h6>
                   <button
-                    className={`mybtn ${!visibleContainer ? "disabled" : null}`}
+                    className={`mybtn ${
+                      visibleContainer === undefined ? "disabled" : null
+                    }`}
                     onClick={() => {
                       //dont do anything if no container is selected
-                      if (!visibleContainer) {
+                      if (visibleContainer === undefined) {
                         return null;
                       }
                       setLocalPlan((old) => {
@@ -194,7 +198,9 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
             return (
               <div key={`${container.id} ${container.name}`}>
                 {visibleContainer === container.id && (
-                  <h4 className="containerHeader">{container.name}</h4>
+                  <h4 className="containerHeader">
+                    {container.size + " " + container.name}
+                  </h4>
                 )}
                 <Container
                   container={container}
@@ -208,7 +214,44 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
               </div>
             );
           })}
-          <button className="mybtn border-radius">Save Garden</button>
+          <button
+            className="mybtn border-radius"
+            onClick={() => {
+              const gardenName = prompt(
+                "Please enter the name of your garden:"
+              );
+              if (gardenName != null) {
+                const gardenData = {
+                  name: gardenName,
+                  containers: localPlan.containers,
+                };
+                // console.log(gardenData);
+                fetch("http://localhost:8000/save_garden", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                  },
+                  credentials: "include",
+                  body: JSON.stringify(gardenData),
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    if (data.status === "success") {
+                      console.log("Garden saved successfully");
+                      navigate("/");
+                    } else {
+                      console.log("Error saving garden: ", data.message);
+                    }
+                  })
+                  .catch((error) =>
+                    console.error("There was an error: ", error)
+                  );
+              }
+            }}
+          >
+            Save Garden
+          </button>
         </div>
       </div>
     </>
