@@ -203,3 +203,47 @@ input[type="number"] {
 #loadingSquareDiv {
   display: flex;
 }
+
+@media (max-width: 1365px) {
+  .square {
+    max-width: 34px;
+    max-height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    width: 34px;
+    /* background-color: black; */
+  }
+}
+@media (max-width: 940px) {
+  .square {
+    max-width: 24px;
+    max-height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    width: 24px;
+  }
+}
+@media (max-width: 690px) {
+  .square {
+    max-width: 14px;
+    max-height: 14px;
+    min-width: 14px;
+    min-height: 14px;
+    width: 14px;
+  }
+  #gardenCreatorDiv {
+    max-width: 100%;
+  }
+  #createGardenForm {
+    margin: 1rem;
+
+    padding: 1rem;
+  }
+  .checkboxLabel {
+    max-width: 100%;
+    margin-right: 0rem;
+  }
+  .checkboxLabel p {
+    text-wrap: wrap;
+  }
+}

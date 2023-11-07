@@ -11,9 +11,20 @@
   flex-wrap: wrap;
 }
 
+#revisions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: azure;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid black;
+}
+
 .leftoverPlant {
   text-align: center;
   border: 1px solid black;
+  margin: 1rem;
 }
 
 #buttons {
@@ -22,10 +33,10 @@
 
 .btnImg {
   max-width: 100px;
-  border-radius: 50px;
+  /* border-radius: 50px; */
   display: inline;
   margin: 0.3rem;
-  border: 2px solid black;
+  border: 1px solid black;
 }
 
 .btnImg:hover {
@@ -77,4 +88,16 @@
   margin-top: 3rem;
   margin-bottom: 3rem;
   text-align: center;
+}
+
+@media (max-width: 820px) {
+  .content {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  .flex {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 }

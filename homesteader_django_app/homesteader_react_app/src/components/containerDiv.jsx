@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
 import { PlantInfoDiv } from "./plantInfoDiv";
-import { reviseContainer } from "../assets/apiCalls";
+import { reviseContainer, fillContainer } from "../assets/apiCalls";
 
 Container.propTypes = {
   container: PropTypes.object,
@@ -34,35 +34,81 @@ export function Container({
               console.log("started api call");
               if (!isRevising) {
                 setIsRevising(true);
-                const newContainer = await reviseContainer(
-                  JSON.stringify(container)
-                );
-                console.log(newContainer);
-                const parsed = JSON.parse(newContainer);
-                parsed.needsRevision = false;
-                setLocalPlan((old) => {
-                  //check if there is a leftoverPlants key in the newly revised container
-                  let newLeftoverPlants;
-                  parsed.leftoverPlants
-                    ? (newLeftoverPlants = parsed.leftoverPlants)
-                    : (newLeftoverPlants = old.leftoverPlants);
-                  //replace old container with the revised container
-                  const newContainers = old.containers.map((container) => {
-                    if (container.id === parsed.id) {
-                      return parsed;
-                    } else {
-                      return container;
-                    }
+
+                // TODO I am here doing things
+                //if the container has been added by the user via the Add button
+                if (container.isNewContainer === true) {
+                  const info = `I live in a ${localPlan.gardenClimate} climate`;
+
+                  let plantArray = [];
+                  container.plants.forEach((plant) =>
+                    plantArray.push(plant.name)
+                  );
+
+                  let newContainer = await fillContainer(
+                    container,
+                    plantArray,
+                    info,
+                    container.id
+                  );
+
+                  newContainer = await JSON.parse(newContainer);
+                  newContainer = newContainer.container;
+
+                  // const newContainer = await response.json();
+                  setLocalPlan((old) => {
+                    return {
+                      ...old,
+                      containers: [
+                        ...old.containers.filter(
+                          (c) => c.id != newContainer.id
+                        ),
+                        newContainer,
+                      ],
+                      //this is breaking my brain but I THINK it is going to filter the old leftoverPlants array to not include
+                      // any plants that are in this new container
+                      leftoverPlants: [
+                        ...old.leftoverPlants.filter(
+                          (plantName) =>
+                            !newContainer.plants
+                              .map((plant) => plant.name)
+                              .includes(plantName)
+                        ),
+                      ],
+                    };
                   });
-                  return {
-                    ...old,
-                    containers: newContainers,
-                    leftoverPlants: [
-                      ...old.leftoverPlants,
-                      ...newLeftoverPlants,
-                    ],
-                  };
-                });
+                  //if the container was set by the AI but the user has changed it somehow
+                } else {
+                  const newContainer = await reviseContainer(
+                    JSON.stringify(container)
+                  );
+                  const parsed = JSON.parse(newContainer);
+                  parsed.needsRevision = false;
+                  setLocalPlan((old) => {
+                    //check if there is a leftoverPlants key in the newly revised container
+                    let newLeftoverPlants;
+                    parsed.leftoverPlants
+                      ? (newLeftoverPlants = parsed.leftoverPlants)
+                      : (newLeftoverPlants = old.leftoverPlants);
+                    //replace old container with the revised container
+                    const newContainers = old.containers.map((container) => {
+                      if (container.id === parsed.id) {
+                        return parsed;
+                      } else {
+                        return container;
+                      }
+                    });
+                    return {
+                      ...old,
+                      containers: newContainers,
+                      leftoverPlants: [
+                        ...old.leftoverPlants,
+                        ...newLeftoverPlants,
+                      ],
+                    };
+                  });
+                }
+
                 setIsRevising(false);
               }
             }}
@@ -74,15 +120,16 @@ export function Container({
       {/* <p>
         <b>{container.name}</b>
       </p> */}
-      {container.plants.map((plant) => {
-        return (
-          <PlantInfoDiv
-            key={`${plant.id} ${plant.name}`}
-            plant={plant}
-            setLocalPlan={setLocalPlan}
-          />
-        );
-      })}
+      {container.plants &&
+        container.plants.map((plant) => {
+          return (
+            <PlantInfoDiv
+              key={`${plant.id} ${plant.name}`}
+              plant={plant}
+              setLocalPlan={setLocalPlan}
+            />
+          );
+        })}
       <div className="furtherInfo">
         <p>
           <b>Instructions: </b> {container.instructions}
@@ -94,6 +141,22 @@ export function Container({
           <b>Shopping list: </b> {container.shoppingList}
         </p>
       </div>
+      {container.plants.length === 0 && (
+        <button
+          onClick={() => {
+            setLocalPlan((old) => {
+              return {
+                ...old,
+                containers: [
+                  ...old.containers.filter((c) => c.id != container.id),
+                ],
+              };
+            });
+          }}
+        >
+          Delete Container
+        </button>
+      )}
     </div>
   );
 }

@@ -38,9 +38,14 @@ const RegisterPage = (props) => {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("Success: ", data);
-          props.toggleAuthenticated();
-          navigate("/");
+          if (data.status === "success") {
+            console.log("Success: ", data);
+            props.toggleAuthenticated();
+            navigate("/");
+          } else {
+            console.log("Error: ", data.Message);
+            alert(data.Message);
+          }
         })
         .catch((error) => console.log("Error: ", error));
     }

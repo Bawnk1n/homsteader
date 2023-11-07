@@ -12,6 +12,7 @@ from django.http import JsonResponse
 import json
 from homesteader.models import Garden, Plant, Container
 from django.db import transaction
+from django.utils import timezone
 
 
 def index(request):
@@ -53,11 +54,11 @@ def register(request):
             # Log the user in
             if user is not None:
                 login(request, user)
-            return JsonResponse({"Message": "Created Succesfully"}, status=status.HTTP_201_CREATED)
+            return JsonResponse({"status": "success", "Message": "Created Succesfully"}, status=status.HTTP_201_CREATED)
         except ValidationError:
-            return JsonResponse({"Message": str(ValidationError)}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "Message": str(ValidationError)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception:
-            return JsonResponse({"Message": "Something went wrong when creating new user"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JsonResponse({"status": "error", "Message": "Something went wrong when creating new user"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def login_api(request):
@@ -90,20 +91,24 @@ def logout_api(request):
 @api_view(['GET'])
 def is_authenticated(request):
     if request.user.is_authenticated:
-        return Response({"Message": "User is authenticated", "success": True})
+        return JsonResponse({"Message": "User is authenticated", "success": True, "username": request.user.username})
     else:
-        return Response({"Message": "User is not authenticated", "success": False})
+        return JsonResponse({"Message": "User is not authenticated", "success": False})
 
 
 # @login_required
 def save_garden(request):
-    print('here')
     if request.method == 'POST':
         try:
             with transaction.atomic():
                 garden_object = json.loads(
                     request.body.decode('utf-8'))
-                garden = Garden.objects.create(user=request.user)
+                is_user_garden = Garden.objects.filter(
+                    user=request.user).exists()
+                if is_user_garden:
+                    return JsonResponse({'status': 'error', 'message': 'User already has a garden'}, status=400)
+                garden = Garden.objects.create(
+                    user=request.user, name=garden_object['name'])
                 # Do something with the garden_object
                 containers = garden_object.get('containers', [])
                 if not containers:
@@ -124,9 +129,11 @@ def save_garden(request):
                             container=saved_container,
                             name=plant.get('name', ''),
                             planting_instructions=plant.get(
-                                'plantingIntructions', ''),
+                                'plantingInstructions', ''),
                             when_to_plant=plant.get('whenToPlant', ''),
                             first_yield=plant.get('firstYield', ''),
+                            first_yield_countdown_start=plant.get(
+                                'firstYieldCountdownStart', 0),
                             number_of_plants=plant.get('numberOfPlants', 0),
                             general_tips_and_tricks=plant.get(
                                 'generalTipsAndTricks', ''),
@@ -145,12 +152,13 @@ def save_garden(request):
 def retrieve_garden(request):
     print('test')
     if request.user.is_authenticated:
-        print('passed')
+
         try:
             user_garden = Garden.objects.get(user=request.user)
         except Garden.DoesNotExist:
             return JsonResponse({"status": 'fail', 'message': 'user has no garden'})
         recreated_garden = {}
+        recreated_garden['name'] = user_garden.name
         recreated_garden['containers'] = []
         containers = Container.objects.filter(
             user=request.user, garden=user_garden.id)
@@ -173,10 +181,12 @@ def retrieve_garden(request):
                                       'plantingInstructions': plant.planting_instructions,
                                       'whenToPlant': plant.when_to_plant,
                                       'firstYield': plant.first_yield,
+                                      'firstYieldCountdownStart': plant.first_yield_countdown_start,
                                       'numberOfPlants': plant.number_of_plants,
                                       'generalTipsAndTricks': plant.general_tips_and_tricks,
                                       'littleKnownFact': plant.little_known_fact,
-                                      'advancedGardeningTip': plant.advanced_gardening_tip
+                                      'advancedGardeningTip': plant.advanced_gardening_tip,
+                                      'startDate': plant.start_date
                                       }
                         container_dict['plants'].append(plant_dict)
                 recreated_garden['containers'].append(container_dict)
@@ -186,3 +196,39 @@ def retrieve_garden(request):
         return JsonResponse({'status': 'success', 'garden': recreated_garden, 'message': 'Garden successfully retrieved'})
     else:
         return JsonResponse({'status': 'error', 'message': 'User not authenticated'})
+
+
+@login_required
+def set_plant_start_date(request):
+    if request.method == "POST":
+        try:
+            object = json.loads(request.body.decode('utf-8'))
+            user_plant_name = object['plant']['name']
+            container_id = object['containerId']
+            start_date = object.get('startDate', timezone.now().date())
+            user = request.user
+            plant = Plant.objects.get(
+                name=user_plant_name, user=user, container=container_id)
+            plant.start_date = start_date
+            plant.save()
+
+            print(plant.name)
+            return JsonResponse({'status': 'success', 'message': 'fuck you'}, status=200)
+        except Plant.DoesNotExist:
+            return JsonResponse({'status': 'failure', 'message': 'Plant does not exist'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'failure', 'message': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'failure', 'message': str(e)}, status=500)
+
+
+@login_required
+def delete_garden(request):
+    if request.method == "DELETE":
+        try:
+            user = request.user
+            user_garden = Garden.objects.get(user=user)
+            user_garden.delete()
+            return JsonResponse({'status': 'success', 'message': 'Garden deleted succesfully'}, status=200)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)

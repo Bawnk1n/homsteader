@@ -25,7 +25,7 @@ const LoginPage = (props) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": token,
+          "X-CSRFToken": getCookie("csrftoken"),
         },
         credentials: "include",
         body: JSON.stringify({

@@ -151,33 +151,67 @@ export async function fillContainer(container, plants, info, id) {
     messages: [
       {
         role: "system",
-        content: `You are a knowledgeable garden organizer. You will be given a container of a specified size, a list of plants, and general information about the user garden. Your job is to fill the container with whichever plants will harmonize the best with eachother and to maximize the available space. return your answer in the following format: 
-          {
-            "container": {
-              "id": integer,
-              "name": string, 
-              "size": string,
-              "plants": [
-                {
-                  "id": integer
-                  "name": string, 
-                  "plantingInstructions": string, 
-                  "whenToPlant": string,
-                  "firstYield": string,
-                  "numberOfPlants": integer,
-                  "generalTipsAndTricks": string, 
-                  "littleKnownFact": string,
-                  "advancedGardeningTip": string,
-                }, 
-                etc..
-              ], 
-              "instructions": string, 
-              "usefulAdvice": string, 
-              "shoppingList": string
-            }, 
-            "leftoverPlants": [name, name, etc..]
-          }
-          . return ONLY the JSON object with no dialogue.`,
+        content: `You are a knowledgeable garden organizer. You will be given a container of a specified size, a list of plants, and general information about the user garden. Your job is to fill the container with whichever plants will harmonize the best with eachother and to maximize the available space. return your answer in the format and style of the following example: 
+        {
+          "container": {
+            "id": 1,
+            "name": "Raised or Ground Bed",
+            "size": "4ft x 4ft",
+            "plants": [
+              {
+                "name": "Spinach",
+                "id": 14,
+                "difficultyLevel": "Beginner",
+                "flavorProfile": "Mild and earthy",
+                "plantingInstructions": "Sow seeds 1/2 inch deep, spaced 2-3 inches apart.",
+                "whenToPlant": "Cool weather is perfect! Aim for soil temperatures between 45-75°F.",
+                "firstYield": "A quick 4-6 weeks",
+                "firstYieldCountdownStart" : 42 //this number is used to create a countdown and should be the amount of days it will take, on the long side.
+                "wateringInterval": "Keep it moist! Water every 2-3 days when hot, or weekly in cooler weather.",
+                "numberOfPlants": 16,
+                "generalTipsAndTricks": "Keep soil moist but well-drained for optimal growth.",
+                "littleKnownFact": "Did you know? Spinach leaves have mild diuretic and laxative properties.",
+                "advancedGardeningTip": "For rapid growth, opt for well-drained soil rich in organic compost with a pH of 6.5 to 7."
+              },
+              {
+                "name": "Garlic",
+                "id": 15,
+                "difficultyLevel": "Intermediate",
+                "flavorProfile": "Strong and aromatic",
+                "plantingInstructions": "Plant cloves 2 inches deep, spaced 4 inches apart.",
+                "whenToPlant": "Plant in autumn to spice up your summer dishes.",
+                "firstYield": "Patience! It takes about 9 months.",
+                "firstYieldCountdownStart" : 270 //this number is used to create a countdown and should be the amount of days it will take, on the long side.
+                "wateringInterval": "Water once a week, or more often in sweltering conditions.",
+                "numberOfPlants": 16,
+                "generalTipsAndTricks": "Garlic loves fertile, well-drained soil.",
+                "littleKnownFact": "History lesson! Garlic was used as an antiseptic during World Wars.",
+                "advancedGardeningTip": "Plant with the pointed end facing up for the best results."
+              },
+              {
+                "name": "Kale",
+                "id": 16,
+                "difficultyLevel": "Easy",
+                "flavorProfile": "Nutty and slightly bitter",
+                "plantingInstructions": "Sow seeds 1/2 inch deep, 18-24 inches apart.",
+                "whenToPlant": "Start indoors 6-8 weeks before last frost or plant directly in the garden 4 weeks prior.",
+                "firstYield": "Ready in just 2 months!",
+                "firstYieldCountdownStart" : 60 //this number is used to create a countdown and should be the amount of days it will take, on the long side.
+                "wateringInterval": "Water every 3-5 days in hot periods or weekly in cooler, humid climates.",
+                "numberOfPlants": 4,
+                "generalTipsAndTricks": "Maintain moist, weed-free soil for a healthy crop.",
+                "littleKnownFact": "Kale can continue to grow for up to 5 years! Now that's a commitment.",
+                "advancedGardeningTip": "For the happiest Kale, aim for a soil pH of 6.0 to 7.5."
+              }
+            ],
+            "instructions": "First, clear any debris and fluff that soil! Begin with Spinach and Garlic, followed by Kale. Keep those crops hydrated!",
+            "usefulAdvice": "Pro tip: Rotate your crops each year to keep the soil rich and happy.",
+            "shoppingList": "What you'll need: Spinach seeds, Garlic cloves, Kale seeds."
+          },
+          "leftoverPlants": ["some plant name, some other plant name, etc etc"],
+        }
+        
+          . Notes: You may have different amounts of plants in your object, but it should follow that general format. Return ONLY the VALID JSON object with no dialogue.`,
       },
       {
         role: "user",

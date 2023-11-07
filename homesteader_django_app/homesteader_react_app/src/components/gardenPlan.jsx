@@ -4,11 +4,11 @@ import jsPDF from "jspdf";
 import { useEffect, useRef, useState } from "react";
 import { Container } from "./containerDiv";
 import PropTypes from "prop-types";
-import { updateGardenPlan } from "../assets/apiCalls";
 import { useNavigate } from "react-router-dom";
 import { NavBar } from "./navbar";
 import Unknown from "../assets/images/question-circle.svg";
 import { getCookie } from "../assets/getCookie";
+import { structures } from "../assets/data";
 
 GardenPlan.propTypes = {
   plan: PropTypes.object,
@@ -16,7 +16,13 @@ GardenPlan.propTypes = {
   isAuthenticated: PropTypes.bool,
 };
 
-export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
+export function GardenPlan({
+  plan,
+  updatePlan,
+  isAuthenticated,
+  username,
+  logout,
+}) {
   const navigate = useNavigate();
   const [localPlan, setLocalPlan] = useState(() => {
     if (!plan || Object.keys(plan).length < 1) {
@@ -30,69 +36,37 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
 
   useEffect(() => {
     localStorage.setItem("gardenPlan", JSON.stringify(localPlan));
-    console.log(localPlan);
   }, [localPlan]);
 
-  const [isDisabled, setIsDisabled] = useState(false);
   const [visibleContainer, setVisibleContainer] = useState();
-  const [changesTextArea, setChangesTextArea] = useState("");
   const [isRevising, setIsRevising] = useState(false);
 
-  //! Doesn't work properly
-  async function generatePDF() {
-    const plan = document.querySelector(".content");
-    const canvas = await html2canvas(plan);
-    const imgData = canvas.toDataURL("image/png");
-    let pdf = new jsPDF("p", "mm", "a4");
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const aspectRatio = imgProps.width / imgProps.height;
-
-    let scaledWidth = pdfWidth;
-    let scaledHeight = pdfWidth / aspectRatio;
-
-    let heightLeft = scaledHeight;
-    let position = 0;
-
-    while (heightLeft >= 0) {
-      pdf.addImage(imgData, "PNG", 0, position, scaledWidth, scaledHeight);
-      heightLeft -= pdfHeight;
-      position = -1 * heightLeft;
-
-      if (heightLeft >= 0) {
-        pdf.addPage();
-      }
-    }
-
-    pdf.save("garden_plan.pdf");
-  }
-
-  async function updatePlanLocal(e) {
-    e.preventDefault();
-  }
+  //for Add A Container select / button in revisions
+  const [newContainer, setNewContainer] = useState("Small Pot");
 
   return (
     <>
-      <NavBar isAuthenticated={isAuthenticated} />
+      <NavBar
+        isAuthenticated={isAuthenticated}
+        username={username}
+        logout={logout}
+      />
       <div className="content">
-        <div>
-          <h1>Garden Plan</h1>
-          <h2>Tentative Instructions and Advice</h2>
-        </div>
-        <div>
-          <h3>Revisions</h3>
-          <p>
-            Leftover containers:{" "}
-            {leftoverContainers.length > 0
-              ? leftoverContainers.join(", ")
-              : "None"}
-          </p>
+        <h1>Garden Plan</h1>
 
-          <p>
-            Leftover plants:{" "}
-            {leftoverPlants.length > 0 ? leftoverPlants.join(", ") : "None"}
-          </p>
+        <div id="revisions">
+          <h3>Revisions</h3>
+          {leftoverContainers.length > 0 ? (
+            <p>
+              {"Excess containers: " +
+                leftoverContainers
+                  .map((container) => container.name)
+                  .join(", ")}
+            </p>
+          ) : null}
+
+          {leftoverPlants.length > 0 ? <p>Excess plants: </p> : null}
+
           <div className="flex">
             {leftoverPlants.map((plant) => {
               return (
@@ -150,30 +124,61 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
               );
             })}
           </div>
+          {leftoverPlants.length > 0 && (
+            <>
+              <h4>Add a container</h4>
+
+              <select onChange={(e) => setNewContainer(e.target.value)}>
+                {structures.map((structure) => {
+                  return (
+                    <option value={structure.name} key={structure.name}>
+                      {structure.name}
+                    </option>
+                  );
+                })}
+              </select>
+              <button
+                onClick={() => {
+                  const structureInfo = structures.filter(
+                    (structure) => structure.name === newContainer
+                  );
+                  const addMe = structureInfo[0];
+                  const lastID = containers[containers.length - 1].id;
+                  addMe.id = lastID + 1;
+                  addMe.plants = [];
+                  addMe.instructions = "";
+                  addMe.usefulAdvice = "";
+                  addMe.shoppingList = "";
+                  addMe.isNewContainer = true;
+                  setLocalPlan((old) => {
+                    return {
+                      ...old,
+                      containers: [...old.containers, addMe],
+                    };
+                  });
+                }}
+                className="mybtn"
+              >
+                Add
+              </button>
+            </>
+          )}
         </div>
         <div id="buttons">
-          <h3>Containers</h3>
+          <h2>Containers</h2>
           {containers.map((container) => {
-            let result = container.name.match(
-              /Large Pot|Raised or Ground Bed/i
-            );
+            let result = container.name;
+
+            let check = result.match(/Raised Bed|Large Pot/i);
+
             let src;
+            if (!check) {
+              src = result;
+            } else {
+              src = check[0];
+            }
             if (result === null) {
               src = Unknown;
-            } else {
-              switch (result[0]) {
-                case null:
-                  src = Unknown;
-                  break;
-                case "Large Pot":
-                  src = "Large Pot";
-                  break;
-                case "Raised or Ground Bed":
-                  src = "Raised or Ground Bed";
-                  break;
-                case "Small Pot":
-                  src = "Small Pot";
-              }
             }
 
             return (
@@ -198,9 +203,11 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
             return (
               <div key={`${container.id} ${container.name}`}>
                 {visibleContainer === container.id && (
-                  <h4 className="containerHeader">
-                    {container.size + " " + container.name}
-                  </h4>
+                  <h3 className="containerHeader">
+                    {container.size
+                      ? container.size + " " + container.name
+                      : container.name}
+                  </h3>
                 )}
                 <Container
                   container={container}
@@ -225,7 +232,7 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
                   name: gardenName,
                   containers: localPlan.containers,
                 };
-                // console.log(gardenData);
+
                 fetch("http://localhost:8000/save_garden", {
                   method: "POST",
                   headers: {
@@ -242,6 +249,11 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
                       navigate("/");
                     } else {
                       console.log("Error saving garden: ", data.message);
+                      if (data.message === "User already has a garden") {
+                        alert(
+                          "Delete your current garden before creating a new one (at the bottom of the Garden page)"
+                        );
+                      }
                     }
                   })
                   .catch((error) =>
@@ -256,4 +268,24 @@ export function GardenPlan({ plan, updatePlan, isAuthenticated }) {
       </div>
     </>
   );
+}
+
+// ------------------DEV BUTTONS----------------
+
+//change local plan
+{
+  /* <button
+onClick={() => {
+  setLocalPlan((old) => {
+    return {
+      ...old,
+      containers: [
+        ...old.containers.filter((c) => c.plants != undefined),
+      ],
+    };
+  });
+}}
+>
+Reset
+</button> */
 }

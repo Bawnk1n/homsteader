@@ -17,37 +17,53 @@ CreateGarden.propTypes = {
   updatePlan: PropTypes.func,
 };
 
+function determineSquareWidth() {
+  let screenWidth = window.innerWidth;
+  // console.log(screenWidth);
+  switch (true) {
+    case screenWidth >= 1366:
+      return 52;
+    case screenWidth >= 940 && screenWidth < 1366:
+      return 36;
+    case screenWidth >= 692 && screenWidth < 940:
+      return 26;
+    default:
+      return 16;
+  }
+}
+function useWindowWidth() {
+  const [width, setWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup function to remove the event listener
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return width;
+}
+
 export function CreateGarden(props) {
   const [gardenWidth, setGardenWidth] = useState(10);
   const [gardenHeight, setGardenHeight] = useState(5);
   const [myStructures, setMyStructures] = useState([]);
+  const [squareWidth, setSquareWidth] = useState(determineSquareWidth());
   const navigate = useNavigate();
+  const screenWidth = useWindowWidth();
 
   const [form, setForm] = useState({
     spaceAvailable: `${gardenWidth}ft x ${gardenHeight}ft`,
-    preferredGrowingContainers: [
-      { name: "Raised or Ground Bed", width: 4, height: 4 },
-      { name: "Raised or Ground Bed", width: 4, height: 4 },
-      { name: "Large Pot", width: 2, height: 2, diameter: "12 inches" },
-      { name: "Large Pot", width: 2, height: 2, diameter: "12 inches" },
-    ],
-    experienceLevel: "beginner",
-    climate: "Highlands / Mountainous",
-    plants: [
-      "Tomatoes",
-      "Cucumbers",
-      "Lettuce",
-      "Bell Peppers",
-      "Carrots",
-      "Green Beans",
-      "Zucchini",
-      "Spinach",
-      "Garlic",
-      "Onions",
-      "Kale",
-      "Cherry Tomatoes",
-    ],
+    preferredGrowingContainers: [],
+    experienceLevel: "",
+    climate: "",
+    plants: [],
   });
+
+  useEffect(() => {
+    setSquareWidth(determineSquareWidth);
+  }, [screenWidth]);
 
   const [newGardenPlan, setNewGardenPlan] = useState({
     containers: [],
@@ -68,11 +84,14 @@ export function CreateGarden(props) {
 
   const { updatePlan } = props;
 
+  // THIS IS IMPORTANT, it updates plan in App.jsx everytime the API call returns an object,
+  // which is then what is passed to gardenPlan
   useEffect(() => {
     updatePlan({
       leftoverContainers: leftoverContainers,
       containers: containersArray,
       leftoverPlants: remainingPlants,
+      gardenClimate: form.climate,
     });
     localStorage.setItem(
       "gardenPlan",
@@ -171,12 +190,17 @@ export function CreateGarden(props) {
     }
     const responseObject = JSON.parse(response);
     // console.log("responseObject", responseObject);
+    console.log(responseObject.container);
     return [responseObject.container, responseObject.leftoverPlants];
   }
 
   return (
     <div id="createGardenPage">
-      <NavBar logout={props.logout} isAuthenticated={props.isAuthenticated} />
+      <NavBar
+        logout={props.logout}
+        isAuthenticated={props.isAuthenticated}
+        username={props.username}
+      />
       <div id="gardenCreatorDiv">
         <div id="gardenSizeFormDiv">
           <form id="gardenSizeForm">
@@ -220,7 +244,12 @@ export function CreateGarden(props) {
             </select>
           </form>
         </div>
-        <div id="gardenGrid" style={{ maxWidth: `${52 * gardenWidth}px` }}>
+        <div
+          id="gardenGrid"
+          style={{ maxWidth: `${squareWidth * gardenWidth}px` }}
+        >
+          {/* {console.log(window.innerWidth)} */}
+          {/* {console.log(squareWidth)} */}
           {Array.from({ length: gardenHeight * gardenWidth }).map(
             (_, index) => (
               <Square
@@ -235,7 +264,7 @@ export function CreateGarden(props) {
                 setIsDragging={setIsDragging}
                 setIsAdding={setIsAdding}
                 isAdding={isAdding}
-                width={gardenWidth}
+                width={squareWidth}
                 structure={structure}
                 setStructurePoints={setStructurePoints}
                 structurePoints={structurePoints}
@@ -260,26 +289,56 @@ export function CreateGarden(props) {
               setStructure({
                 width: 1,
                 height: 1,
-                diameter: "six - eight inches",
-                name: "Small or Med Pot",
+                diameter: "four to six inches",
+                name: "Small Pot",
               })
             }
             className="mybtn"
+            title="four to six inch diameter"
           >
-            Small / Med Pot (1 x 1)
+            Small Pot
+          </button>
+          <button
+            onClick={() =>
+              setStructure({
+                width: 1,
+                height: 1,
+                diameter: "eight to twelve inches",
+                name: "Medium Pot",
+              })
+            }
+            className="mybtn"
+            title="eight to twelve inch diameter"
+          >
+            Medium Pot
           </button>
           <button
             onClick={() =>
               setStructure({
                 width: 2,
                 height: 2,
-                diameter: "12 inches",
+                diameter: "fourteen to eighteen inches",
                 name: "Large Pot",
               })
             }
             className="mybtn"
+            title="fourteen to eighteen inch diameter"
           >
-            Large Pot (2 x 2)
+            Large Pot
+          </button>
+          <button
+            onClick={() =>
+              setStructure({
+                width: 2,
+                height: 2,
+                diameter: "twenty+ inches",
+                name: "Extra-large Pot",
+              })
+            }
+            className="mybtn"
+            title="twenty+ inch diameter"
+          >
+            Extra-large Pot
           </button>
           <button
             onClick={() =>
@@ -294,19 +353,19 @@ export function CreateGarden(props) {
               setStructure({
                 height: 4,
                 width: 4,
-                name: "Raised or Ground Bed",
+                name: "Raised Bed",
               })
             }
             className="mybtn"
           >
-            Raised or Ground Bed (4 x 4)
+            Raised Bed (4 x 4)
           </button>
           <button
             onClick={() =>
               setStructure({
                 height: 4,
                 width: 8,
-                name: "Raised or Ground Bed",
+                name: "Raised Bed",
               })
             }
             className="mybtn"
@@ -323,7 +382,7 @@ export function CreateGarden(props) {
           </button>
           <button
             onClick={() =>
-              setStructure({ height: 5, width: 10, name: "Ground Bed" })
+              setStructure({ height: 5, width: 10, name: "Raised Bed" })
             }
             className="mybtn"
           >
@@ -433,6 +492,7 @@ export function CreateGarden(props) {
             if (!isDisabled) {
               setIsDisabled(true);
               setLoadingBar(true);
+              localStorage.setItem("gardenPlan", "");
 
               let plants = form.plants;
               let index = 0;
@@ -469,6 +529,8 @@ export function CreateGarden(props) {
         >
           Make A Plan
         </button>
+        {/* create a dynamic amount of squares based on how many containers the user has and slowly color them 
+        in as the api call returns container objects */}
         {loadingBar && (
           <div id="loadingDiv">
             <h4>

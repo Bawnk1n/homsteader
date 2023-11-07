@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 class Garden(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, default='')
 
 
 class Container(models.Model):
@@ -25,7 +26,9 @@ class Plant(models.Model):
     planting_instructions = models.TextField()
     when_to_plant = models.CharField(max_length=100)
     first_yield = models.CharField(max_length=100)
+    first_yield_countdown_start = models.IntegerField()
     number_of_plants = models.IntegerField()
     general_tips_and_tricks = models.TextField()
     little_known_fact = models.TextField()
     advanced_gardening_tip = models.TextField()
+    start_date = models.DateField(default=None, null=True, blank=True)

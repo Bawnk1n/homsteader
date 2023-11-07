@@ -12,21 +12,36 @@ export function NavBar(props) {
     <div id="nav">
       <div className="side-by-side">
         <Link to="/" className="nav-item">
-          My Garden
+          Garden
         </Link>
+        <p className="nav-item">|</p>
         <Link to="/plan/" className="nav-item">
-          My Plan
+          Plan
         </Link>
-        <p className="nav-item">nav item 3</p>
       </div>
+      {props.username && (
+        <p id="signedInAs">
+          <small>signed in as {props.username}</small>
+        </p>
+      )}
       <div>
         {props.isAuthenticated && (
-          <button onClick={props.logout} className="mybtn border-radius">
-            Logout
-          </button>
+          <div id="user-info">
+            <button
+              onClick={() => {
+                props.logout(), navigate("/login");
+              }}
+              className="mybtn border-radius smaller"
+            >
+              Logout
+            </button>
+          </div>
         )}
         {!props.isAuthenticated && (
-          <button onClick={() => navigate("/login/")} className="mybtn">
+          <button
+            onClick={() => navigate("/login/")}
+            className="mybtn border-radius"
+          >
             Login
           </button>
         )}

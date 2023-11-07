@@ -1,18 +1,38 @@
 import { NavBar } from "./navbar";
 import { LoginButtons } from "./loginButtons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { getCookie } from "../assets/getCookie";
 import "../assets/myGarden.css";
+import { PlantModal } from "./plantModal";
 
 MyGarden.propTypes = {
   isAuthenticated: PropTypes.bool,
   logout: PropTypes.func,
 };
 
-export function MyGarden({ isAuthenticated, logout, toggleAuthenticated }) {
+export function MyGarden({
+  isAuthenticated,
+  logout,
+  toggleAuthenticated,
+  username,
+}) {
   const [userGarden, setUserGarden] = useState();
+  const navigate = useNavigate();
+
+  const [showModal, setShowModal] = useState(false);
+  const [visibleModal, setVisibleModal] = useState();
+
+  function closeModal() {
+    setShowModal(false);
+    console.log(showModal);
+  }
+
+  function openModal(id) {
+    setVisibleModal(id);
+    setShowModal(true);
+  }
 
   useEffect(() => {
     const fetchGarden = async () => {
@@ -34,18 +54,46 @@ export function MyGarden({ isAuthenticated, logout, toggleAuthenticated }) {
     };
     fetchGarden();
   }, []);
+
+  async function deleteGarden() {
+    let user_confirm = confirm(
+      "Deleting your garden is irreversible, continue?"
+    );
+    if (!user_confirm) {
+      return;
+    }
+    const response = await fetch("http://localhost:8000/delete_garden", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      credentials: "include",
+    });
+    const data = await response.json();
+    if (data.status === "success") {
+      console.log("User garden deleted succesfully");
+      window.location.reload();
+    } else {
+      console.error("Error deleting garden: ", data.message);
+    }
+  }
   return (
-    <div>
+    <div id="page">
       {!isAuthenticated && (
         <div id="not_authenticated">
           <NavBar logout={logout} isAuthenticated={isAuthenticated} />
           <LoginButtons />{" "}
-          <button onClick={toggleAuthenticated}>Authenticate</button>
+          {/* <button onClick={toggleAuthenticated}>Authenticate</button> */}
         </div>
       )}
       {isAuthenticated && (
-        <div>
-          <NavBar logout={logout} isAuthenticated={isAuthenticated} />
+        <div id="main-page">
+          <NavBar
+            logout={logout}
+            isAuthenticated={isAuthenticated}
+            username={username}
+          />
           <div id="content">
             {!userGarden && (
               <Link to="/create" className="mybtn">
@@ -54,12 +102,14 @@ export function MyGarden({ isAuthenticated, logout, toggleAuthenticated }) {
             )}
             {userGarden && (
               <div id="containers">
+                {console.log(userGarden)}
+                <h2>Garden: {userGarden.name}</h2>
                 {userGarden.containers.map((container) => (
                   <div
                     key={container.name + " " + container.id}
                     className="gardenContainer"
                   >
-                    {console.log(container.name + " " + container.id)}
+                    {/* {console.log(container.name + " " + container.id)} */}
                     <h4>{container.name}</h4>
                     <h5>Size: {container.size}</h5>
                     <div className="containerPlants">
@@ -68,8 +118,25 @@ export function MyGarden({ isAuthenticated, logout, toggleAuthenticated }) {
                           <div
                             key={plant.name + " " + plant.id}
                             className="plant"
+                            onClick={() => {
+                              if (!showModal) {
+                                openModal(plant.id);
+                              }
+                            }}
                           >
+                            <img
+                              src="../src/assets/images/Small Pot.png"
+                              width="100px"
+                            />
                             <p>{plant.name}</p>
+
+                            {showModal && plant.id === visibleModal && (
+                              <PlantModal
+                                plant={plant}
+                                containerId={container.id}
+                                closeModal={closeModal}
+                              />
+                            )}
                           </div>
                         );
                       })}
@@ -86,6 +153,11 @@ export function MyGarden({ isAuthenticated, logout, toggleAuthenticated }) {
             )}
           </div>
         </div>
+      )}
+      {userGarden && (
+        <button onClick={deleteGarden} className="mybtn">
+          Delete Garden
+        </button>
       )}
     </div>
   );

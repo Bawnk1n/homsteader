@@ -16,7 +16,15 @@ export function PlantInfoDiv({ plant, setLocalPlan }) {
         <b>Number of plants: {plant.numberOfPlants}</b>
       </p>
       {/* <p>{plant.numberOfPlants}</p> */}
-      <div className="moreInfo" style={{ maxHeight: moreInfo ? "36rem" : "0" }}>
+      <div className="moreInfo" style={{ maxHeight: moreInfo ? "40rem" : "0" }}>
+        <p>
+          <b>Difficulty: </b>
+        </p>
+        <p>{plant.difficultyLevel}</p>
+        <p>
+          <b>Flavor profile: </b>
+        </p>
+        <p>{plant.flavorProfile}</p>
         <p>
           <b>Planting instructions: </b>
         </p>
