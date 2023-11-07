@@ -2,6 +2,11 @@ import { useState } from "react";
 import "../assets/styles.css";
 import { getCookie } from "../assets/getCookie";
 import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
+
+LoginPage.propTypes = {
+  setIsAuthenticated: PropTypes.func,
+};
 
 const LoginPage = (props) => {
   const navigate = useNavigate();

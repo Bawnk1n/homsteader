@@ -140,11 +140,11 @@ export async function fillContainer(container, plants, info, id) {
     containerString = `diameter of ${container.diameter}`;
   }
 
-  const userContent = `the container is this: a ${
-    container.name
-  }, with a size of: ${containerString}, my list of potential plants is this: ${plants.join(
-    ", "
-  )}. Some general info about my garden: ${info}`;
+  // const userContent = `the container is this: a ${
+  //   container.name
+  // }, with a size of: ${containerString}, my list of potential plants is this: ${plants.join(
+  //   ", "
+  // )}. Some general info about my garden: ${info}`;
   // console.log(userContent);
 
   const completion = await openai.chat.completions.create({

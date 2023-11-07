@@ -1,6 +1,6 @@
 import { NavBar } from "./navbar";
 import { LoginButtons } from "./loginButtons";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { getCookie } from "../assets/getCookie";
@@ -10,16 +10,11 @@ import { PlantModal } from "./plantModal";
 MyGarden.propTypes = {
   isAuthenticated: PropTypes.bool,
   logout: PropTypes.func,
+  username: PropTypes.string,
 };
 
-export function MyGarden({
-  isAuthenticated,
-  logout,
-  toggleAuthenticated,
-  username,
-}) {
+export function MyGarden({ isAuthenticated, logout, username }) {
   const [userGarden, setUserGarden] = useState();
-  const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false);
   const [visibleModal, setVisibleModal] = useState();

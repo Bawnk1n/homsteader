@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+
 import { PlantInfoDiv } from "./plantInfoDiv";
 import { reviseContainer, fillContainer } from "../assets/apiCalls";
 

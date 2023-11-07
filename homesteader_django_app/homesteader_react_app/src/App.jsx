@@ -1,17 +1,10 @@
 import { useEffect, useState } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Link,
-  useNavigate,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import LoginPage from "./components/login";
 import RegisterPage from "./components/register";
 import { getCookie } from "./assets/getCookie";
-import { NavBar } from "./components/navbar";
-import { LoginButtons } from "./components/loginButtons";
+
 import { CreateGarden } from "./components/createGarden";
 import { GardenPlan } from "./components/gardenPlan";
 import { MyGarden } from "./components/myGarden";
@@ -46,7 +39,6 @@ function App() {
   }, []);
 
   const [plan, setPlan] = useState({});
-  const [gardenClimate, setGardenClimate] = useState();
 
   async function logout() {
     console.log(getCookie("csrftoken"));

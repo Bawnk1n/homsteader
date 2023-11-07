@@ -93,10 +93,6 @@
   /* font-weight: bold; */
 }
 
-.countdownSquare {
-  /* border: 1px solid black; */
-}
-
 @media (max-width: 820px) {
   .plantModal {
     padding-top: 5rem;

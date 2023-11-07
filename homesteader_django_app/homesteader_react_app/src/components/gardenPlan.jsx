@@ -1,7 +1,5 @@
-import html2canvas from "html2canvas";
 import "../assets/gardenPlan.css";
-import jsPDF from "jspdf";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Container } from "./containerDiv";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
@@ -14,11 +12,13 @@ GardenPlan.propTypes = {
   plan: PropTypes.object,
   updatePlan: PropTypes.func,
   isAuthenticated: PropTypes.bool,
+  username: PropTypes.string,
+  logout: PropTypes.func,
 };
 
 export function GardenPlan({
   plan,
-  updatePlan,
+
   isAuthenticated,
   username,
   logout,

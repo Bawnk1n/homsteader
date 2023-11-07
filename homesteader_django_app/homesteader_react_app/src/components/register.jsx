@@ -2,6 +2,11 @@ import "../assets/styles.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCookie } from "../assets/getCookie";
+import PropTypes from "prop-types";
+
+RegisterPage.propTypes = {
+  toggleAuthenticated: PropTypes.func,
+};
 
 const RegisterPage = (props) => {
   const [username, setUsername] = useState("");

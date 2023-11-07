@@ -1,3 +1,10 @@
+import PropTypes from "prop-types";
+
+CountdownSquare.propTypes = {
+  width: PropTypes.number,
+  done: PropTypes.bool,
+};
+
 export function CountdownSquare(props) {
   return (
     <div

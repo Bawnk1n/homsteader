@@ -3,18 +3,17 @@ import { NavBar } from "./navbar";
 import { commonClimates } from "../assets/presetPlants";
 import "../assets/createGarden.css";
 import { PlantList } from "./plantList";
-import { Link } from "react-router-dom";
-import { createGardenPlan, fillContainer } from "../assets/apiCalls";
+import { fillContainer } from "../assets/apiCalls";
 import { useNavigate } from "react-router-dom";
 import { Square } from "./square";
 import PropTypes from "prop-types";
-import { GardenPlan } from "./gardenPlan";
 import { LoadingSquare } from "./loadingSquare";
 
 CreateGarden.propTypes = {
   logout: PropTypes.func,
   isAuthenticated: PropTypes.bool,
   updatePlan: PropTypes.func,
+  username: PropTypes.string,
 };
 
 function determineSquareWidth() {

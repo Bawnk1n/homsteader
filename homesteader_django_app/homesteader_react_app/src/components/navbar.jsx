@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 NavBar.propTypes = {
   isAuthenticated: PropTypes.bool,
   logout: PropTypes.func,
+  username: PropTypes.string,
 };
 
 export function NavBar(props) {

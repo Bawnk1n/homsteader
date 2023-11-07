@@ -6,12 +6,10 @@ import PropTypes from "prop-types";
 PlantModal.propTypes = {
   plant: PropTypes.object,
   containerId: PropTypes.number,
-  visibleModal: PropTypes.number,
   closeModal: PropTypes.func,
 };
 
-export function PlantModal({ plant, containerId, visibleModal, closeModal }) {
-  const [endDate, setEndDate] = useState(plant.firstYieldCountdownStart);
+export function PlantModal({ plant, containerId, closeModal }) {
   const [startDate, setStartDate] = useState(
     plant.startDate ? plant.startDate : null
   );
@@ -69,16 +67,7 @@ export function PlantModal({ plant, containerId, visibleModal, closeModal }) {
   }
   function startCountdown() {
     postStartDate(todaysDate);
-
-    // setStartDate(now);
-    // console.log(plant);
   }
-
-  //how to calculate which squares are done or not.
-  //add a startDate row to Plant model.
-  //set that to todays date on plantMe click
-  //use a useEffect to check todays date and calculate how many days passed the start date it is
-  //if CountdownSquare id is <= that number, it is done
 
   return (
     <div
