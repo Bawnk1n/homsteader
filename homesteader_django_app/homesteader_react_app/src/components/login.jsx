@@ -8,7 +8,7 @@ LoginPage.propTypes = {
   setIsAuthenticated: PropTypes.func,
 };
 
-const LoginPage = (props) => {
+export function LoginPage(props) {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -85,6 +85,4 @@ const LoginPage = (props) => {
       </form>
     </div>
   );
-};
-
-export default LoginPage;
+}

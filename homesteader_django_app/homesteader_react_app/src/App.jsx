@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
-import LoginPage from "./components/login";
-import RegisterPage from "./components/register";
+import { LoginPage } from "./components/login";
+import { RegisterPage } from "./components/register";
 import { getCookie } from "./assets/getCookie";
 
 import { CreateGarden } from "./components/createGarden";

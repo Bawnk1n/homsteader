@@ -8,7 +8,7 @@ RegisterPage.propTypes = {
   toggleAuthenticated: PropTypes.func,
 };
 
-const RegisterPage = (props) => {
+export function RegisterPage(props) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [passwordMatch, setPasswordMatch] = useState("");
@@ -106,6 +106,4 @@ const RegisterPage = (props) => {
       </form>
     </div>
   );
-};
-
-export default RegisterPage;
+}
