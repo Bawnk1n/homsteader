@@ -64,13 +64,6 @@ export function CreateGarden(props) {
     setSquareWidth(determineSquareWidth);
   }, [screenWidth]);
 
-  const [newGardenPlan, setNewGardenPlan] = useState({
-    containers: [],
-    leftoverContainers: [],
-    leftoverPlants: [],
-  });
-
-  // console.log(newGardenPlan);
   //for API call button
   const [isDisabled, setIsDisabled] = useState(false);
   const [loadingBar, setLoadingBar] = useState(false);
@@ -100,6 +93,8 @@ export function CreateGarden(props) {
         leftoverPlants: remainingPlants,
       })
     );
+    //i dont think I want the useEffect to run each time any of these varialbes change, so I am disabled the eslint error squigglies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containersArray, leftoverContainers]);
 
   useEffect(() => {
@@ -110,6 +105,7 @@ export function CreateGarden(props) {
     if (done) {
       navigate("/plan");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);
 
   function updateForm(key, value, updateArray, removeElement) {
@@ -512,13 +508,7 @@ export function CreateGarden(props) {
                   index++;
                 }
               }
-              setNewGardenPlan((old) => {
-                return {
-                  leftoverContainers: leftoverContainers,
-                  containers: containersArray,
-                  leftoverPlants: remainingPlants,
-                };
-              });
+
               setIsDisabled(false);
 
               setDone(true);

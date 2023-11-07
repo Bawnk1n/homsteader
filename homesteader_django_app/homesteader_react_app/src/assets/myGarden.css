@@ -1,8 +1,7 @@
 #not_authenticated {
   margin-top: 10rem;
 }
-#page {
-  display: flex;
+#gardenPage {
   justify-content: center;
   align-items: center;
 }

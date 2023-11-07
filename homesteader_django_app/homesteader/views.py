@@ -79,7 +79,6 @@ def login_api(request):
             return JsonResponse({"Message": "Invalid Credentials", "success": False}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-# @ensure_csrf_cookie
 @csrf_exempt
 def logout_api(request):
     if request.method == 'POST':

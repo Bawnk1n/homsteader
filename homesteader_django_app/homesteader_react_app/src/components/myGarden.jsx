@@ -74,7 +74,7 @@ export function MyGarden({ isAuthenticated, logout, username }) {
     }
   }
   return (
-    <div id="page">
+    <div id="gardenPage" style={{ display: isAuthenticated ? "" : "flex" }}>
       {!isAuthenticated && (
         <div id="not_authenticated">
           <NavBar logout={logout} isAuthenticated={isAuthenticated} />
